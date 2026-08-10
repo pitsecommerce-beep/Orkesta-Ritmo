@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cfdi:Comprobante
+    xmlns:cfdi="http://www.sat.gob.mx/cfd/4"
+    xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+    xmlns:nomina12="http://www.sat.gob.mx/nomina12"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    Version="4.0"
+    Serie="NOM"
+    Folio="0001"
+    Fecha="2024-01-31T12:00:00"
+    SubTotal="15000.00"
+    Descuento="3500.00"
+    Total="12200.00"
+    Moneda="MXN"
+    TipoDeComprobante="N"
+    MetodoPago="PUE"
+    FormaPago="99"
+    LugarExpedicion="06600">
+    <cfdi:Emisor
+        Rfc="XAXX010101000"
+        Nombre="EMPRESA EMPLEADORA SA DE CV"
+        RegimenFiscal="601"/>
+    <cfdi:Receptor
+        Rfc="XBXX020202000"
+        Nombre="EMPLEADO SINTETICO GARCIA LOPEZ"
+        DomicilioFiscalReceptor="01000"
+        RegimenFiscalReceptor="605"
+        UsoCFDI="CN01"/>
+    <cfdi:Conceptos>
+        <cfdi:Concepto
+            ClaveProdServ="84111505"
+            Cantidad="1"
+            ClaveUnidad="ACT"
+            Descripcion="Pago de nomina"
+            ValorUnitario="15000.00"
+            Importe="15000.00"
+            Descuento="3500.00"
+            ObjetoImp="01"/>
+    </cfdi:Conceptos>
+    <cfdi:Complemento>
+        <nomina12:Nomina
+            Version="1.2"
+            TipoNomina="O"
+            FechaPago="2024-01-31"
+            FechaInicialPago="2024-01-16"
+            FechaFinalPago="2024-01-31"
+            NumDiasPagados="15"
+            TotalPercepciones="15000.00"
+            TotalDeducciones="3500.00"
+            TotalOtrosPagos="700.00">
+            <nomina12:Percepciones
+                TotalSueldos="15000.00"
+                TotalGravado="12000.00"
+                TotalExento="3000.00">
+                <nomina12:Percepcion
+                    TipoPercepcion="001"
+                    Clave="001"
+                    Concepto="Sueldo"
+                    ImporteGravado="10000.00"
+                    ImporteExento="0.00"/>
+                <nomina12:Percepcion
+                    TipoPercepcion="005"
+                    Clave="005"
+                    Concepto="Fondo de ahorro"
+                    ImporteGravado="2000.00"
+                    ImporteExento="3000.00"/>
+            </nomina12:Percepciones>
+            <nomina12:Deducciones
+                TotalOtrasDeducciones="1500.00"
+                TotalImpuestosRetenidos="2000.00">
+                <nomina12:Deduccion
+                    TipoDeduccion="002"
+                    Clave="002"
+                    Concepto="ISR"
+                    Importe="2000.00"/>
+                <nomina12:Deduccion
+                    TipoDeduccion="001"
+                    Clave="001"
+                    Concepto="Seguridad social"
+                    Importe="1500.00"/>
+            </nomina12:Deducciones>
+            <nomina12:OtrosPagos>
+                <nomina12:OtroPago
+                    TipoOtroPago="002"
+                    Clave="002"
+                    Concepto="Subsidio para el empleo"
+                    Importe="700.00"/>
+            </nomina12:OtrosPagos>
+        </nomina12:Nomina>
+        <tfd:TimbreFiscalDigital
+            xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+            Version="1.1"
+            UUID="FADE1234-5678-9ABC-DEF0-123456789ABC"
+            FechaTimbrado="2024-01-31T12:01:00"
+            SelloCFD="nom123..."
+            NoCertificadoSAT="00001000000123456789"
+            SelloSAT="nomsat..."/>
+    </cfdi:Complemento>
+</cfdi:Comprobante>

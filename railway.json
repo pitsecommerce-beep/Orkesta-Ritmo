@@ -1,0 +1,33 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {},
+  "deploy": {},
+  "services": {
+    "web": {
+      "build": {
+        "dockerfilePath": "apps/web/Dockerfile"
+      },
+      "deploy": {
+        "healthcheckPath": "/",
+        "restartPolicyType": "ON_FAILURE"
+      }
+    },
+    "api": {
+      "build": {
+        "dockerfilePath": "apps/api/Dockerfile"
+      },
+      "deploy": {
+        "healthcheckPath": "/api/health",
+        "restartPolicyType": "ON_FAILURE"
+      }
+    },
+    "redis": {
+      "source": {
+        "image": "redis:7-alpine"
+      },
+      "deploy": {
+        "restartPolicyType": "ON_FAILURE"
+      }
+    }
+  }
+}

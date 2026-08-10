@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cfdi-parser"
+version = "0.1.0"
+description = "Parser de CFDI 4.0 para Orkesta Ritmo - herramienta de preparacion de impuestos en Mexico"
+requires-python = ">=3.11"
+license = {text = "Proprietary"}
+dependencies = [
+    "lxml>=5.0",
+    "python-dateutil>=2.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["cfdi_parser"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

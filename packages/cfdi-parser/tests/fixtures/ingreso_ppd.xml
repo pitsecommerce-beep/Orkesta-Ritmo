@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cfdi:Comprobante
+    xmlns:cfdi="http://www.sat.gob.mx/cfd/4"
+    xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    Version="4.0"
+    Serie="B"
+    Folio="67890"
+    Fecha="2024-02-20T14:00:00"
+    FormaPago="99"
+    MetodoPago="PPD"
+    Moneda="USD"
+    TipoCambio="17.1523"
+    SubTotal="5000.00"
+    Total="5800.00"
+    TipoDeComprobante="I"
+    LugarExpedicion="06600">
+    <cfdi:Emisor
+        Rfc="XAXX010101000"
+        Nombre="EMPRESA SINTETICA SA DE CV"
+        RegimenFiscal="601"/>
+    <cfdi:Receptor
+        Rfc="XEXX010101000"
+        Nombre="FOREIGN CLIENT INC"
+        DomicilioFiscalReceptor="01000"
+        RegimenFiscalReceptor="616"
+        UsoCFDI="G01"/>
+    <cfdi:Conceptos>
+        <cfdi:Concepto
+            ClaveProdServ="43232300"
+            Cantidad="10"
+            ClaveUnidad="E48"
+            Descripcion="Licencias de software empresarial"
+            ValorUnitario="500.00"
+            Importe="5000.00"
+            ObjetoImp="02">
+            <cfdi:Impuestos>
+                <cfdi:Traslados>
+                    <cfdi:Traslado
+                        Base="5000.00"
+                        Impuesto="002"
+                        TipoFactor="Tasa"
+                        TasaOCuota="0.160000"
+                        Importe="800.00"/>
+                </cfdi:Traslados>
+            </cfdi:Impuestos>
+        </cfdi:Concepto>
+    </cfdi:Conceptos>
+    <cfdi:Impuestos TotalImpuestosTrasladados="800.00">
+        <cfdi:Traslados>
+            <cfdi:Traslado
+                Base="5000.00"
+                Impuesto="002"
+                TipoFactor="Tasa"
+                TasaOCuota="0.160000"
+                Importe="800.00"/>
+        </cfdi:Traslados>
+    </cfdi:Impuestos>
+    <cfdi:Complemento>
+        <tfd:TimbreFiscalDigital
+            xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+            Version="1.1"
+            UUID="1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D"
+            FechaTimbrado="2024-02-20T14:01:00"
+            SelloCFD="def456..."
+            NoCertificadoSAT="00001000000123456789"
+            SelloSAT="uvw321..."/>
+    </cfdi:Complemento>
+</cfdi:Comprobante>

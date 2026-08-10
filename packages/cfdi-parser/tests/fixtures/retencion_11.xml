@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<retenciones:Retenciones
+    xmlns:retenciones="http://www.sat.gob.mx/esquemas/retencionpago/1"
+    xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+    xmlns:plataformas="http://www.sat.gob.mx/esquemas/retencionpago/1/PlataformasTecnologicas10"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    Version="1.0"
+    FechaExp="2024-06-30T23:59:59"
+    CveRetenc="26">
+    <retenciones:Emisor
+        RFCEmisor="XAXX010101000"
+        NomDenRazSocE="PLATAFORMA DIGITAL SA DE CV"/>
+    <retenciones:Receptor Nacionalidad="Nacional">
+        <retenciones:Nacional
+            RFCRecep="XBXX020202000"
+            NomDenRazSocR="CONDUCTOR SINTETICO"/>
+    </retenciones:Receptor>
+    <retenciones:Periodo
+        MesIni="1"
+        MesFin="6"
+        Ejerc="2024"/>
+    <retenciones:Totales
+        montoTotOperacion="150000.00"
+        montoTotGrav="120000.00"
+        montoTotExent="30000.00"
+        montoTotRet="18000.00">
+        <retenciones:ImpRetenidos
+            Impuesto="001"
+            montoRet="12000.00"
+            TipoPagoRet="01"/>
+        <retenciones:ImpRetenidos
+            Impuesto="002"
+            montoRet="6000.00"
+            TipoPagoRet="01"/>
+    </retenciones:Totales>
+    <retenciones:Complemento>
+        <tfd:TimbreFiscalDigital
+            xmlns:tfd="http://www.sat.gob.mx/TimbreFiscalDigital"
+            Version="1.1"
+            UUID="A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+            FechaTimbrado="2024-06-30T23:59:59"
+            SelloCFD="ret123..."
+            NoCertificadoSAT="00001000000123456789"
+            SelloSAT="retsat..."/>
+        <plataformas:ServiciosPlataformasTecnologicas
+            Version="1.0"
+            Periodicidad="05"
+            NumServ="PLAT-2024-001"
+            MonTotServSIVA="130000.00"
+            TotalISRRetenido="12000.00"
+            TotalIVARetenido="6000.00"
+            TotalIVATrasladado="20800.00"
+            DifIVAEnt662="14800.00">
+        </plataformas:ServiciosPlataformasTecnologicas>
+    </retenciones:Complemento>
+</retenciones:Retenciones>
