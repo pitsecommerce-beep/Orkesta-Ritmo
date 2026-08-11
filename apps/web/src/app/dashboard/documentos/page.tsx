@@ -39,13 +39,15 @@ export default function DocumentosPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">Documentos</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Sube tus CFDI (XML), estados de cuenta y comprobantes.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">Documentos</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sube tus CFDI (XML), estados de cuenta y comprobantes.
+        </p>
+      </div>
 
       {/* Upload zone */}
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-2">
         <CardContent className="pt-6">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -73,7 +75,7 @@ export default function DocumentosPage() {
       </Card>
 
       {/* Document list */}
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-4">
         <CardHeader>
           <CardTitle className="font-heading text-lg">Archivos subidos</CardTitle>
         </CardHeader>

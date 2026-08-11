@@ -31,13 +31,15 @@ export default function ExtractosPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">Extractos bancarios</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Sube estados de cuenta para conciliar contra tus CFDIs.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">Extractos bancarios</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Sube estados de cuenta para conciliar contra tus CFDIs.
+        </p>
+      </div>
 
       {/* Upload */}
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-2">
         <CardContent className="pt-6">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -58,7 +60,7 @@ export default function ExtractosPage() {
       </Card>
 
       {/* Movements table */}
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-4">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="font-heading text-lg">Movimientos — Enero 2025</CardTitle>
           <Badge variant="outline">{MOCK_MOVEMENTS.length} movimientos</Badge>

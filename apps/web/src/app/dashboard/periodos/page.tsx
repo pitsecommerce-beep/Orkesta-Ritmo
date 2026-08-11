@@ -37,10 +37,12 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 export default function PeriodosPage() {
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">Períodos fiscales</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Ejercicio 2025</p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">Períodos fiscales</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Ejercicio 2025</p>
+      </div>
 
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-2">
         <CardHeader>
           <CardTitle className="font-heading text-lg">Obligaciones mensuales</CardTitle>
         </CardHeader>

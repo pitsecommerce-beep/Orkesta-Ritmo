@@ -21,10 +21,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-full flex-col items-center justify-center px-4 py-16">
       <Link href="/">
-        <Logo type="full" className="mb-8" />
+        <Logo type="full" className="mb-8 animate-fade-in" />
       </Link>
 
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm animate-scale-in">
         <CardHeader className="text-center">
           <CardTitle className="font-heading text-xl">
             {sent ? "Revisa tu correo" : "Iniciar sesión"}

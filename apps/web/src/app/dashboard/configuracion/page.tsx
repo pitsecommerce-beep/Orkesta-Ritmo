@@ -12,14 +12,16 @@ import { Shield, Users, Settings } from "lucide-react";
 export default function ConfiguracionPage() {
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">Configuración</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Administra tu workspace y preferencias.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">Configuración</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Administra tu workspace y preferencias.
+        </p>
+      </div>
 
       <div className="mt-6 space-y-6 max-w-2xl">
         {/* Workspace info */}
-        <Card>
+        <Card className="animate-fade-in-up stagger-1">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
               <Settings className="h-5 w-5" /> Workspace
@@ -51,7 +53,7 @@ export default function ConfiguracionPage() {
         </Card>
 
         {/* Team */}
-        <Card>
+        <Card className="animate-fade-in-up stagger-2">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
               <Users className="h-5 w-5" /> Equipo
@@ -82,7 +84,7 @@ export default function ConfiguracionPage() {
         </Card>
 
         {/* Security */}
-        <Card>
+        <Card className="animate-fade-in-up stagger-3">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
               <Shield className="h-5 w-5" /> Seguridad

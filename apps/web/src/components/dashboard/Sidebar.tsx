@@ -28,7 +28,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r bg-sidebar-background">
+    <aside className="flex h-full w-64 flex-col border-r bg-sidebar-background animate-slide-in-left">
       <div className="flex h-16 items-center border-b px-4">
         <Link href="/dashboard">
           <Logo type="full" />

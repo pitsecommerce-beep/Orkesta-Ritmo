@@ -57,7 +57,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </Link>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div className="animate-fade-in-up flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="font-heading text-2xl font-bold">Enero 2025</h1>
           <p className="text-sm text-muted-foreground">Período {id} — RESICO Persona Física</p>
@@ -81,10 +81,10 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsList>
 
         {/* Tax Breakdown Tab */}
-        <TabsContent value="desglose" className="mt-6">
+        <TabsContent value="desglose" className="mt-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* ISR */}
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="font-heading text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-[var(--color-azul)]" />
@@ -110,7 +110,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
             </Card>
 
             {/* IVA */}
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="font-heading text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-[var(--color-azul)]" />
@@ -145,7 +145,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         {/* CFDIs Tab */}
-        <TabsContent value="cfdis" className="mt-6">
+        <TabsContent value="cfdis" className="mt-6 animate-fade-in">
           <Card>
             <CardHeader>
               <CardTitle className="font-heading text-lg">
@@ -188,7 +188,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         {/* Conciliation Tab */}
-        <TabsContent value="conciliacion" className="mt-6">
+        <TabsContent value="conciliacion" className="mt-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
