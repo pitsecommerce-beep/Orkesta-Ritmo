@@ -72,27 +72,27 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[var(--color-azul-claro)]/20 to-background py-24 md:py-36">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground md:text-6xl">
+          <h1 className="animate-fade-in-up font-heading text-4xl font-bold tracking-tight text-foreground md:text-6xl">
             Prepara tu declaración fiscal,{" "}
             <span className="text-[var(--color-azul)]">sin sorpresas</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+          <p className="animate-fade-in-up stagger-2 mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
             Ritmo calcula tus impuestos mensuales con trazabilidad CFDI por CFDI.
             Tú revisas, tú presentas en el portal del SAT.
           </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="animate-fade-in-up stagger-4 mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link href="/auth/login">
-              <Button size="lg" className="gap-2 px-8">
+              <Button size="lg" className="gap-2 px-8 transition-transform hover:scale-105">
                 Comenzar gratis <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <a href="#como-funciona">
-              <Button variant="outline" size="lg" className="gap-2 px-8">
+              <Button variant="outline" size="lg" className="gap-2 px-8 transition-transform hover:scale-105">
                 Ver cómo funciona <ChevronDown className="h-4 w-4" />
               </Button>
             </a>
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">
+          <p className="animate-fade-in stagger-6 mt-6 text-xs text-muted-foreground">
             Ritmo prepara, tú presentas. No generamos línea de captura ni conectamos con el SAT.
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function LandingPage() {
                 <div className="mt-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-azul)] text-xs font-bold text-white">
                   {i + 1}
                 </div>
-                <h3 className="mt-3 font-heading text-lg font-semibold">{s.title}</h3>
+                <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
               </div>
             ))}
@@ -142,7 +142,7 @@ export default function LandingPage() {
             Qué hace Ritmo — y qué no
           </h2>
           <div className="mt-12 grid gap-8 md:grid-cols-2">
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <h3 className="font-heading text-lg font-semibold text-green-700">Sí hace</h3>
                 <ul className="mt-4 space-y-2 text-sm">
@@ -154,7 +154,7 @@ export default function LandingPage() {
                 </ul>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <h3 className="font-heading text-lg font-semibold text-red-700">No hace</h3>
                 <ul className="mt-4 space-y-2 text-sm">
@@ -181,7 +181,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {REGIMES.map((r) => (
-              <Card key={r.name}>
+              <Card key={r.name} className="card-hover">
                 <CardContent className="pt-6">
                   <h3 className="font-heading font-semibold">{r.name}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{r.desc}</p>

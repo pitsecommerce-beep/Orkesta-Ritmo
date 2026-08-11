@@ -12,7 +12,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 @pytest.fixture
 def mercado_pago_sample_path() -> Path:
     """Ruta al archivo de fixture de Mercado Pago."""
-    return FIXTURES_DIR / "mercado_pago_sample.txt"
+    return FIXTURES_DIR / "mercado_pago_real.txt"
 
 
 @pytest.fixture

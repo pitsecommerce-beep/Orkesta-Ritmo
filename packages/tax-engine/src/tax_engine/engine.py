@@ -14,7 +14,8 @@ from tax_engine.clasificador import clasificar_cfdis
 from tax_engine.iva import calcular_iva
 from tax_engine.resico_pf import calcular_isr_resico_pf
 from tax_engine.resico_pm import calcular_isr_resico_pm
-from tax_engine.tarifas import obtener_ejercicio
+from tax_engine.exceptions import EjercicioNoDisponibleError
+from tax_engine.tarifas_fallback import obtener_ejercicio as _obtener_ejercicio_fallback
 from tax_engine.types import (
     CfdiNormalizado,
     DesgloseISR,
@@ -34,6 +35,7 @@ def calcular(
     periodo: int,
     clasificaciones_actividad: Optional[list[ResultadoActividad]] = None,
     cfdis_recibidos: Optional[list[CfdiNormalizado]] = None,
+    ejercicio: Optional[Ejercicio] = None,
 ) -> ResultadoCalculo:
     """
     Calcula ISR e IVA para un periodo fiscal.
@@ -52,28 +54,30 @@ def calcular(
         ResultadoCalculo con desglose de ISR, IVA, alertas y trazabilidad.
 
     Raises:
-        ValueError: Si el ejercicio no tiene tarifas disponibles.
+        EjercicioNoDisponibleError: Si el ejercicio no tiene tarifas disponibles.
     """
     alertas: list[str] = []
 
-    # Obtener datos del ejercicio
-    ejercicio = obtener_ejercicio(ejercicio_year)
     if ejercicio is None:
-        raise ValueError(
-            f"Ejercicio fiscal {ejercicio_year} no disponible. "
-            f"Solo se soportan ejercicios con tarifas cargadas."
+        ejercicio = _obtener_ejercicio_fallback(ejercicio_year)
+    if ejercicio is None:
+        raise EjercicioNoDisponibleError(
+            ejercicio_year,
+            "No existen tarifas cargadas para este ejercicio.",
         )
 
     # Validar que el ejercicio tenga tarifas
     if perfil.regimen in (Regimen.RESICO_PF, Regimen.RESICO_PF_SUELDOS, Regimen.RESICO_PM):
         if not ejercicio.tarifas_resico:
-            raise ValueError(
-                f"Ejercicio {ejercicio_year} no tiene tarifas RESICO cargadas."
+            raise EjercicioNoDisponibleError(
+                ejercicio_year,
+                "No tiene tarifas RESICO cargadas.",
             )
     elif perfil.regimen in (Regimen.ARRENDAMIENTO, Regimen.ARRENDAMIENTO_SUELDOS):
         if not ejercicio.tarifas_art96:
-            raise ValueError(
-                f"Ejercicio {ejercicio_year} no tiene tarifas Art. 96 cargadas."
+            raise EjercicioNoDisponibleError(
+                ejercicio_year,
+                "No tiene tarifas Art. 96 cargadas.",
             )
 
     # Clasificar CFDIs emitidos

@@ -14,7 +14,7 @@ Para trimestral: la tarifa mensual se triplica en cuota fija y limites.
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
-from tax_engine.tarifas import buscar_tramo_art96
+from tax_engine.tarifas_fallback import buscar_tramo_art96
 from tax_engine.types import (
     DesgloseISR,
     TramoArt96,

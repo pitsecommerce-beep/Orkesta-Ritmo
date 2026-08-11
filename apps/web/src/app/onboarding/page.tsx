@@ -256,7 +256,7 @@ export default function OnboardingPage() {
 function OnboardingShell({ step, children }: { step: number; children: React.ReactNode }) {
   return (
     <div className="flex min-h-full flex-col items-center px-4 py-12">
-      <Logo type="full" className="mb-8" />
+      <Logo type="full" className="mb-8 animate-fade-in" />
       <div className="mb-6 w-full max-w-md">
         <Progress value={(step / TOTAL_STEPS) * 100} className="h-2" />
         <p className="mt-1 text-right text-xs text-muted-foreground">Paso {step} de {TOTAL_STEPS}</p>
@@ -282,7 +282,7 @@ function StepCard({
   nextLabel?: string;
 }) {
   return (
-    <Card>
+    <Card className="animate-scale-in">
       <CardHeader>
         <CardTitle className="font-heading text-lg">{title}</CardTitle>
       </CardHeader>

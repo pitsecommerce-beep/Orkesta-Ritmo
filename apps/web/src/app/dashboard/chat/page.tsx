@@ -46,12 +46,14 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-full flex-col p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">Asistente fiscal</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Consulta dudas sobre tu declaración. La IA nunca produce números que entren al cálculo sin validación.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">Asistente fiscal</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Consulta dudas sobre tu declaración. La IA nunca produce números que entren al cálculo sin validación.
+        </p>
+      </div>
 
-      <Card className="mt-6 flex flex-1 flex-col overflow-hidden">
+      <Card className="mt-6 flex flex-1 flex-col overflow-hidden animate-fade-in-up stagger-2">
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
             {messages.map((m) => (

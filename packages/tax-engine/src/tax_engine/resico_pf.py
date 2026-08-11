@@ -12,7 +12,7 @@ RESICO PF es un pago definitivo mensual:
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
-from tax_engine.tarifas import buscar_tramo_resico
+from tax_engine.tarifas_fallback import buscar_tramo_resico
 from tax_engine.types import (
     DesgloseISR,
     TramoResico,

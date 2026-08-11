@@ -54,7 +54,7 @@ export function ChatPanel() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-azul)] text-white shadow-lg hover:bg-[var(--color-azul-profundo)] transition-colors"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-azul)] text-white shadow-lg hover:bg-[var(--color-azul-profundo)] transition-all hover:scale-110 animate-scale-in"
       >
         <MessageSquare className="h-6 w-6" />
       </button>
@@ -62,7 +62,7 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col rounded-xl border bg-background shadow-2xl">
+    <div className="fixed bottom-6 right-6 z-50 flex h-[500px] w-[380px] flex-col rounded-xl border bg-background shadow-2xl animate-slide-in-right">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h3 className="font-heading text-sm font-semibold">Asistente Ritmo</h3>

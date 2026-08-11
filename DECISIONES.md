@@ -34,6 +34,22 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 
 13. **Arrendamiento: base del periodo es el ingreso del mes, no acumulado desde enero.** Esto contradice algunas guías pero es el tratamiento correcto para pagos provisionales mensuales.
 
+20. **Tarifa trimestral de Arrendamiento: `_triplicar_tarifa()` multiplica límites y cuota fija por 3, mantiene el porcentaje.** La LISR Art. 106 establece que los contribuyentes con opción trimestral aplican la tarifa mensual "multiplicando" por el número de meses. Multiplicar solo los límites y cuota fija (no el porcentaje marginal) produce el mismo resultado que sumar tres meses de pago provisional mensual, lo cual es consistente con la interpretación del SAT en su calculadora en línea.
+
+21. **La base de datos es la fuente de verdad para tarifas.** `tarifas.py` se renombró a `tarifas_fallback.py` y solo sirve como fallback para tests sin conexión a DB. El motor acepta un parámetro `ejercicio` inyectado; cuando la API invoca el cálculo, carga las tarifas de Supabase y las pasa al motor. Un test de sincronización (`test_tarifas_sync.py`) verifica que los valores del fallback coinciden con el seed SQL, con conversión fracción→porcentaje.
+
+22. **DB almacena tasa/porcentaje como fracción decimal (0.0100 = 1%), Python usa porcentaje (1.00 = 1%).** La columna `NUMERIC(6,4)` del esquema cabe mejor con fracciones. La capa API convierte al cargar.
+
+## API
+
+23. **JWT del usuario propagado a Supabase para RLS.** Cada request crea un `Client` con el Bearer token del usuario vía `client.postgrest.auth(token)`. La service role key nunca se usa para operaciones de usuario.
+
+24. **`guest_or_auth` para endpoints públicos con contexto opcional.** El cuestionario IVA funciona sin autenticación; si hay JWT, se extrae el `user_id` para tracking.
+
+25. **Onboarding crea tenant + membership en `confirmar-regimen`.** El paso de confirmación del régimen es el punto donde se persiste el contribuyente, no al final del flujo completo.
+
+26. **Bóveda e.firma: RLS restringe a `propietario`, feature flag en la API.** Doble barrera: la política `user_has_role(tenant_id, 'propietario')` en la DB y `FEATURE_EFIRMA` en la API.
+
 ## Frontend
 
 14. **Montserrat para títulos, Lora para texto corrido.** Ambas de Google Fonts, cargadas con `next/font`.

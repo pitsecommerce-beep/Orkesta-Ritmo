@@ -57,7 +57,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </Link>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-8">
+      <div className="animate-fade-in-up flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="font-heading text-2xl font-bold">Enero 2025</h1>
           <p className="text-sm text-muted-foreground">Período {id} — RESICO Persona Física</p>
@@ -81,10 +81,10 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsList>
 
         {/* Tax Breakdown Tab */}
-        <TabsContent value="desglose" className="mt-6">
+        <TabsContent value="desglose" className="mt-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* ISR */}
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="font-heading text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-[var(--color-azul)]" />
@@ -110,7 +110,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
             </Card>
 
             {/* IVA */}
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="font-heading text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-[var(--color-azul)]" />
@@ -130,7 +130,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
                     highlight
                   />
                   {MOCK_DESGLOSE.iva_acreditable === 0 && (
-                    <div className="flex items-start gap-2 rounded-md bg-yellow-50 p-3 text-xs text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
+                    <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning)]/20 bg-[var(--color-warning-light)] p-3 text-xs text-amber-900 dark:text-amber-200">
                       <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
                       <span>
                         IVA acreditable en cero: no se acreditó IVA porque no se pudo comprobar
@@ -145,7 +145,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         {/* CFDIs Tab */}
-        <TabsContent value="cfdis" className="mt-6">
+        <TabsContent value="cfdis" className="mt-6 animate-fade-in">
           <Card>
             <CardHeader>
               <CardTitle className="font-heading text-lg">
@@ -188,7 +188,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         {/* Conciliation Tab */}
-        <TabsContent value="conciliacion" className="mt-6">
+        <TabsContent value="conciliacion" className="mt-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
@@ -241,9 +241,9 @@ function Row({
   highlight?: boolean;
 }) {
   return (
-    <div className={`flex items-center justify-between ${highlight ? "rounded-md bg-[var(--color-azul)]/5 px-3 py-2" : ""}`}>
+    <div className={`flex items-center justify-between ${highlight ? "rounded-md bg-[var(--color-primary-light)] px-3 py-2" : ""}`}>
       <span className={`text-sm ${bold ? "font-semibold" : "text-muted-foreground"}`}>{label}</span>
-      <span className={`font-mono text-sm ${bold ? "font-bold" : ""} ${highlight ? "text-[var(--color-azul)] text-base" : ""}`}>
+      <span className={`font-mono text-sm ${bold ? "font-bold" : ""} ${highlight ? "text-[var(--color-azul)] text-base font-bold" : ""}`}>
         {value}
       </span>
     </div>

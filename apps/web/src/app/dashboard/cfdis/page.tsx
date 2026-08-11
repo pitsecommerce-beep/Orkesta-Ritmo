@@ -43,13 +43,15 @@ export default function CfdisPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <h1 className="font-heading text-2xl font-bold">CFDIs</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Comprobantes fiscales digitales clasificados y verificados.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="font-heading text-2xl font-bold">CFDIs</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Comprobantes fiscales digitales clasificados y verificados.
+        </p>
+      </div>
 
       {/* Filters */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row animate-fade-in-up stagger-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -74,7 +76,7 @@ export default function CfdisPage() {
       </div>
 
       {/* Table */}
-      <Card className="mt-6">
+      <Card className="mt-6 animate-fade-in-up stagger-3">
         <CardHeader>
           <CardTitle className="font-heading text-lg flex items-center gap-2">
             <FileText className="h-5 w-5" />

@@ -112,7 +112,7 @@ class TestNoFloats:
             "resico_pm.py",
             "iva.py",
             "clasificador.py",
-            "tarifas.py",
+            "tarifas_fallback.py",
         ]
 
         for filename in expected_files:
