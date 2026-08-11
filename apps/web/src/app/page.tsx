@@ -127,7 +127,7 @@ export default function LandingPage() {
                 <div className="mt-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-azul)] text-xs font-bold text-white">
                   {i + 1}
                 </div>
-                <h3 className="mt-3 font-heading text-lg font-semibold">{s.title}</h3>
+                <h3 className="mt-3 text-lg font-semibold">{s.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
               </div>
             ))}
