@@ -29,9 +29,11 @@ from tax_engine.types import (
     TrazabilidadCfdi,
 )
 from tax_engine.engine import calcular
+from tax_engine.exceptions import EjercicioNoDisponibleError
 
 __all__ = [
     "calcular",
+    "EjercicioNoDisponibleError",
     "CfdiNormalizado",
     "ComplementoPago",
     "DesgloseISR",
