@@ -1,0 +1,226 @@
+Mercado Pago - Estado de Cuenta
+Titular: MARIA GUADALUPE HERNANDEZ CASTRO
+CVU: 0000007702834561234567
+Periodo: 01/10/2025 al 31/10/2025
+
+Saldo inicial: $0.00
+Saldo final: $0.00
+Total de abonos: $23,365.25
+Total de cargos: $26,248.49
+Comisiones: $0.00
+
+Movimientos
+
+01/10/2025 Abono - Transferencia recibida
+08:00:00 80001001 350.00 0.00 MXN
+Clave de rastreo: MPE2025100100001
+CLABE: 012345678901234567
+Beneficiario: MARIA GUADALUPE HERNANDEZ CASTRO
+01/10/2025 Abono - Transferencia recibida
+15:13:17 80001023 1,500.00 35.00 MXN
+01/10/2025 Cargo - Transferencia enviada
+08:26:34 80001001 350.00 0.00 MXN
+02/10/2025 Abono - Transferencia recibida
+15:39:51 80001002 400.00 0.00 MXN
+02/10/2025 Cargo - Transferencia enviada
+08:52:08 80001002 400.00 58.30 MXN
+02/10/2025 Cargo - Transferencia enviada
+15:05:25 80001058 800.00 0.00 MXN
+02/10/2025 Cargo - Cobro automatico por deuda
+08:18:42 80001059 1,200.00 0.00 MXN
+03/10/2025 Abono - Transferencia recibida
+15:31:59 80001003 450.00 0.00 MXN
+03/10/2025 Abono - Pago
+08:44:16 80001024 980.00 0.00 MXN
+03/10/2025 Cargo - Transferencia enviada
+15:57:33 80001003 450.00 0.00 MXN
+03/10/2025 Cargo - Dinero retenido
+08:10:50 80001060 950.00 0.00 MXN
+03/10/2025 Cargo - Transferencia enviada
+15:23:07 80001061 750.00 120.00 MXN
+03/10/2025 Cargo - Cobro automatico por deuda
+08:36:24 80001062 620.00 0.00 MXN
+04/10/2025 Abono - Transferencia recibida
+15:49:41 80001004 500.00 0.00 MXN
+04/10/2025 Abono - Devolucion de dinero
+08:02:58 80001025 320.00 0.00 MXN
+04/10/2025 Abono - Cashback recibido
+15:15:15 80001026 45.25 0.00 MXN
+04/10/2025 Cargo - Transferencia enviada
+08:28:32 80001004 500.00 0.00 MXN
+04/10/2025 Cargo - Dinero retenido
+15:41:49 80001063 580.00 0.00 MXN
+05/10/2025 Abono - Transferencia recibida
+08:54:06 80001005 380.00 145.00 MXN
+05/10/2025 Abono - Entrada de dinero
+15:07:23 80001027 750.00 0.00 MXN
+05/10/2025 Cargo - Transferencia enviada
+08:20:40 80001005 380.00 0.00 MXN
+06/10/2025 Abono - Cancelacion de transferencia recibida
+15:33:57 80001028 890.50 0.00 MXN
+07/10/2025 Abono - Transferencia recibida
+08:46:14 80001029 420.00 0.00 MXN
+07/10/2025 Abono - Pago
+15:59:31 80001030 180.00 0.00 MXN
+07/10/2025 Cargo - Transferencia enviada
+08:12:48 80001064 450.00 0.00 MXN
+08/10/2025 Abono - Transferencia recibida
+15:25:05 80001006 420.00 0.00 MXN
+08/10/2025 Abono - Devolucion de dinero
+08:38:22 80001031 310.00 0.00 MXN
+08/10/2025 Cargo - Transferencia enviada
+15:51:39 80001006 420.00 200.00 MXN
+08/10/2025 Cargo - Cobro automatico por deuda
+08:04:56 80001065 150.00 0.00 MXN
+09/10/2025 Abono - Transferencia recibida
+15:17:13 80001007 470.00 0.00 MXN
+09/10/2025 Abono - Cashback recibido
+08:30:30 80001032 650.00 0.00 MXN
+09/10/2025 Abono - Entrada de dinero
+15:43:47 80001033 175.50 0.00 MXN
+09/10/2025 Abono - Cancelacion de transferencia recibida
+08:56:04 80001034 125.00 0.00 MXN
+09/10/2025 Cargo - Transferencia enviada
+15:09:21 80001007 470.00 0.00 MXN
+10/10/2025 Abono - Transferencia recibida
+08:22:38 80001008 520.00 0.00 MXN
+10/10/2025 Cargo - Transferencia enviada
+15:35:55 80001008 520.00 0.00 MXN
+10/10/2025 Cargo - Dinero retenido
+08:48:12 80001066 380.00 0.00 MXN
+10/10/2025 Cargo - Transferencia enviada
+15:01:29 80001067 280.00 0.00 MXN
+11/10/2025 Abono - Transferencia recibida
+08:14:46 80001035 88.50 80.00 MXN
+11/10/2025 Abono - Pago
+15:27:03 80001036 560.00 0.00 MXN
+12/10/2025 Abono - Cashback recibido
+08:40:20 0 145.00 0.00 MXN
+12/10/2025 Abono - Transferencia recibida
+15:53:37 80001009 360.00 0.00 MXN
+12/10/2025 Abono - Devolucion de dinero
+08:06:54 80001037 230.00 0.00 MXN
+12/10/2025 Cargo - Transferencia enviada
+15:19:11 80001009 360.00 0.00 MXN
+12/10/2025 Cargo - Cobro automatico por deuda
+08:32:28 80001068 175.00 0.00 MXN
+13/10/2025 Abono - Entrada de dinero
+15:45:45 80001039 310.00 0.00 MXN
+13/10/2025 Cargo - Dinero retenido
+08:58:02 80001069 390.00 0.00 MXN
+14/10/2025 Abono - Transferencia recibida
+15:11:19 80001010 410.00 0.00 MXN
+14/10/2025 Abono - Cancelacion de transferencia recibida
+08:24:36 80001040 275.00 0.00 MXN
+14/10/2025 Abono - Transferencia recibida
+15:37:53 80001041 190.00 0.00 MXN
+14/10/2025 Cargo - Transferencia enviada
+08:50:10 80001010 410.00 0.00 MXN
+15/10/2025 Abono - Pago
+15:03:27 80001042 85.00 0.00 MXN
+15/10/2025 Cargo - Transferencia enviada
+08:16:44 80001070 85.00 0.00 MXN
+16/10/2025 Abono - Transferencia recibida
+15:29:01 80001011 460.00 0.00 MXN
+16/10/2025 Cargo - Transferencia enviada
+08:42:18 80001011 460.00 0.00 MXN
+17/10/2025 Abono - Transferencia recibida
+15:55:35 80001012 510.00 100.00 MXN
+17/10/2025 Cargo - Transferencia enviada
+08:08:52 80001012 510.00 0.00 MXN
+18/10/2025 Abono - Transferencia recibida
+15:21:09 80001013 340.00 0.00 MXN
+18/10/2025 Abono - Devolucion de dinero
+08:34:26 80001043 440.00 0.00 MXN
+18/10/2025 Cargo - Transferencia enviada
+15:47:43 80001013 340.00 0.00 MXN
+18/10/2025 Cargo - Cobro automatico por deuda
+08:00:00 80001071 710.00 0.00 MXN
+18/10/2025 Cargo - Dinero retenido
+15:13:17 80001072 520.00 0.00 MXN
+19/10/2025 Abono - Transferencia recibida
+08:26:34 80001014 390.00 0.00 MXN
+19/10/2025 Abono - Cashback recibido
+15:39:51 80001044 365.00 0.00 MXN
+19/10/2025 Cargo - Transferencia enviada
+08:52:08 80001014 390.00 0.00 MXN
+19/10/2025 Cargo - Transferencia enviada
+15:05:25 80001073 340.00 0.00 MXN
+20/10/2025 Abono - Entrada de dinero
+08:18:42 80001045 210.00 0.00 MXN
+20/10/2025 Cargo - Cobro automatico por deuda
+15:31:59 80001074 230.00 0.00 MXN
+21/10/2025 Abono - Transferencia recibida
+08:44:16 80001015 440.00 0.00 MXN
+21/10/2025 Abono - Cancelacion de transferencia recibida
+15:57:33 80001046 155.00 0.00 MXN
+21/10/2025 Cargo - Transferencia enviada
+08:10:50 80001015 440.00 0.00 MXN
+21/10/2025 Cargo - Dinero retenido
+15:23:07 80001075 180.00 0.00 MXN
+22/10/2025 Abono - Transferencia recibida
+08:36:24 80001016 490.00 67.50 MXN
+22/10/2025 Cargo - Transferencia enviada
+15:49:41 80001016 490.00 0.00 MXN
+22/10/2025 Cargo - Transferencia enviada
+08:02:58 80001076 440.00 0.00 MXN
+23/10/2025 Abono - Transferencia recibida
+15:15:15 80001047 95.00 0.00 MXN
+23/10/2025 Abono - Pago
+08:28:32 80001048 330.00 0.00 MXN
+23/10/2025 Abono - Devolucion de dinero
+15:41:49 80001049 280.00 0.00 MXN
+23/10/2025 Cargo - Cobro automatico por deuda
+08:54:06 80001077 125.00 0.00 MXN
+24/10/2025 Abono - Transferencia recibida
+15:07:23 80001017 370.00 0.00 MXN
+24/10/2025 Cargo - Transferencia enviada
+08:20:40 80001017 370.00 0.00 MXN
+24/10/2025 Cargo - Dinero retenido
+15:33:57 80001078 295.00 0.00 MXN
+25/10/2025 Abono - Entrada de dinero
+08:46:14 0 120.00 0.00 MXN
+25/10/2025 Abono - Transferencia recibida
+15:59:31 80001018 430.00 0.00 MXN
+25/10/2025 Abono - Cashback recibido
+08:12:48 80001050 195.00 0.00 MXN
+25/10/2025 Cargo - Transferencia enviada
+15:25:05 80001018 430.00 0.00 MXN
+25/10/2025 Cargo - Transferencia enviada
+08:38:22 80001079 460.00 0.00 MXN
+26/10/2025 Abono - Transferencia recibida
+15:51:39 80001019 480.00 0.00 MXN
+26/10/2025 Abono - Cancelacion de transferencia recibida
+08:04:56 80001052 345.00 0.00 MXN
+26/10/2025 Abono - Transferencia recibida
+15:17:13 80001053 168.28 0.00 MXN
+26/10/2025 Abono - Pago
+08:30:30 80001054 250.00 0.00 MXN
+26/10/2025 Cargo - Transferencia enviada
+15:43:47 80001019 480.00 0.00 MXN
+27/10/2025 Cargo - Cobro automatico por deuda
+08:56:04 80001080 315.00 0.00 MXN
+28/10/2025 Abono - Transferencia recibida
+15:09:21 80001020 530.00 0.00 MXN
+28/10/2025 Abono - Devolucion de dinero
+08:22:38 80001055 380.00 0.00 MXN
+28/10/2025 Abono - Cashback recibido
+15:35:55 80001056 460.00 0.00 MXN
+28/10/2025 Cargo - Transferencia enviada
+08:48:12 80001020 530.00 0.00 MXN
+28/10/2025 Cargo - Dinero retenido
+15:01:29 80001081 165.28 0.00 MXN
+29/10/2025 Abono - Transferencia recibida
+08:14:46 80001021 356.72 0.00 MXN
+29/10/2025 Cargo - Transferencia enviada
+15:27:03 80001021 356.72 0.00 MXN
+29/10/2025 Cargo - Transferencia enviada
+08:40:20 80001082 550.00 0.00 MXN
+30/10/2025 Abono - Transferencia recibida
+15:53:37 80001022 370.00 0.00 MXN
+30/10/2025 Cargo - Transferencia enviada
+08:06:54 80001022 370.00 0.00 MXN
+30/10/2025 Cargo - Cobro automatico por deuda
+15:19:11 80001083 5,681.49 0.00 MXN
+31/10/2025 Abono - Entrada de dinero
+08:32:28 80001057 1,915.50 0.00 MXN
