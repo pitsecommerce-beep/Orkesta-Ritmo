@@ -30,6 +30,11 @@ from tax_engine.types import (
 )
 from tax_engine.engine import calcular
 from tax_engine.exceptions import EjercicioNoDisponibleError
+from tax_engine.tarifas_fallback import (
+    obtener_ejercicio as obtener_ejercicio_fallback,
+    buscar_tramo_resico,
+    buscar_tramo_art96,
+)
 
 __all__ = [
     "calcular",
@@ -51,4 +56,7 @@ __all__ = [
     "TramoResico",
     "TramoArt96",
     "TrazabilidadCfdi",
+    "obtener_ejercicio_fallback",
+    "buscar_tramo_resico",
+    "buscar_tramo_art96",
 ]

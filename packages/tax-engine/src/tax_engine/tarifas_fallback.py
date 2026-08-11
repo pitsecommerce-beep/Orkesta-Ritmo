@@ -1,8 +1,9 @@
 """
-Tablas de tarifas fiscales versionadas por ejercicio.
+Tarifas fiscales hardcoded — fallback para tests.
 
-Las tarifas se almacenan como listas de tramos con valores Decimal.
-Cada ejercicio fiscal tiene su propio conjunto de tarifas.
+En producción la fuente de verdad es la tabla `ejercicios` + `tarifas_resico`
++ `tarifas_art96` en Supabase.  Este archivo existe para que los tests del
+motor puedan ejecutarse sin conexión a base de datos.
 """
 
 from decimal import Decimal

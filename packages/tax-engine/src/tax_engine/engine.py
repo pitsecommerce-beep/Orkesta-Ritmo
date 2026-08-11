@@ -15,7 +15,7 @@ from tax_engine.iva import calcular_iva
 from tax_engine.resico_pf import calcular_isr_resico_pf
 from tax_engine.resico_pm import calcular_isr_resico_pm
 from tax_engine.exceptions import EjercicioNoDisponibleError
-from tax_engine.tarifas import obtener_ejercicio
+from tax_engine.tarifas_fallback import obtener_ejercicio as _obtener_ejercicio_fallback
 from tax_engine.types import (
     CfdiNormalizado,
     DesgloseISR,
@@ -35,6 +35,7 @@ def calcular(
     periodo: int,
     clasificaciones_actividad: Optional[list[ResultadoActividad]] = None,
     cfdis_recibidos: Optional[list[CfdiNormalizado]] = None,
+    ejercicio: Optional[Ejercicio] = None,
 ) -> ResultadoCalculo:
     """
     Calcula ISR e IVA para un periodo fiscal.
@@ -57,8 +58,8 @@ def calcular(
     """
     alertas: list[str] = []
 
-    # Obtener datos del ejercicio
-    ejercicio = obtener_ejercicio(ejercicio_year)
+    if ejercicio is None:
+        ejercicio = _obtener_ejercicio_fallback(ejercicio_year)
     if ejercicio is None:
         raise EjercicioNoDisponibleError(
             ejercicio_year,

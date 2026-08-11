@@ -18,7 +18,7 @@ from tax_engine.types import (
     TramoArt96,
     TramoResico,
 )
-from tax_engine.tarifas import obtener_ejercicio
+from tax_engine.tarifas_fallback import obtener_ejercicio
 
 
 @pytest.fixture
