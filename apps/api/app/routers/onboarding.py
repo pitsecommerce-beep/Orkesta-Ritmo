@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
+from supabase import Client
 import re
+
+from app.db import get_supabase, require_auth
 
 router = APIRouter()
 
@@ -42,12 +45,24 @@ class OnboardingStep6(BaseModel):
 
 
 @router.post("/paso/nombre")
-async def paso_nombre(data: OnboardingStep1):
+async def paso_nombre(
+    data: OnboardingStep1,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
+    db.table("user_profiles").update({
+        "nombre": data.nombre,
+    }).eq("id", user_id).execute()
+
     return {"paso": 1, "siguiente": "constancia"}
 
 
 @router.post("/paso/constancia")
-async def paso_constancia(data: OnboardingStep2):
+async def paso_constancia(
+    data: OnboardingStep2,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
     if not data.tiene_constancia:
         return {
             "paso": 2,
@@ -68,7 +83,11 @@ async def paso_constancia(data: OnboardingStep2):
 
 
 @router.post("/paso/upload-constancia")
-async def upload_constancia(file: UploadFile = File(...)):
+async def upload_constancia(
+    file: UploadFile = File(...),
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
     return {
         "paso": 3,
         "rfc": "XAXX010101000",
@@ -79,7 +98,11 @@ async def upload_constancia(file: UploadFile = File(...)):
 
 
 @router.post("/paso/confirmar-regimen")
-async def confirmar_regimen(data: OnboardingConstanciaResult):
+async def confirmar_regimen(
+    data: OnboardingConstanciaResult,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
     if not RFC_PATTERN.match(data.rfc):
         raise HTTPException(status_code=400, detail="RFC con formato inválido")
 
@@ -93,27 +116,64 @@ async def confirmar_regimen(data: OnboardingConstanciaResult):
             "lista_espera": True,
         }
 
+    tenant_data = {
+        "rfc": data.rfc,
+        "nombre": data.nombre_constancia,
+        "tipo_persona": tipo_persona,
+        "regimen": regimen_normalizado,
+    }
+    tenant_resp = db.table("tenants").insert(tenant_data).execute()
+    if not tenant_resp.data:
+        raise HTTPException(status_code=500, detail="Error al crear contribuyente.")
+
+    tenant_id = tenant_resp.data[0]["id"]
+
+    db.table("memberships").insert({
+        "tenant_id": tenant_id,
+        "user_id": user_id,
+        "rol": "propietario",
+    }).execute()
+
     return {
         "admitido": True,
         "rfc": data.rfc,
         "tipo_persona": tipo_persona,
         "regimen": regimen_normalizado,
+        "tenant_id": tenant_id,
         "siguiente": "origen_ingresos",
     }
 
 
 @router.post("/paso/origen-ingresos")
-async def paso_origen(data: OnboardingStep4):
+async def paso_origen(
+    data: OnboardingStep4,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
     return {"paso": 4, "siguiente": "cuentas_bancarias"}
 
 
 @router.post("/paso/cuentas-bancarias")
-async def paso_cuentas(data: OnboardingStep5):
+async def paso_cuentas(
+    data: OnboardingStep5,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
     return {"paso": 5, "siguiente": "invitar_contador"}
 
 
 @router.post("/paso/invitar-contador")
-async def paso_contador(data: OnboardingStep6):
+async def paso_contador(
+    data: OnboardingStep6,
+    tenant_id: str = None,
+    db: Client = Depends(get_supabase),
+    user_id: str = Depends(require_auth),
+):
+    if tenant_id:
+        db.table("tenants").update({
+            "onboarding_completado": True,
+        }).eq("id", tenant_id).execute()
+
     return {
         "paso": 6,
         "onboarding_completado": True,

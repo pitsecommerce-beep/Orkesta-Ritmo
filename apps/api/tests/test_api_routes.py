@@ -26,9 +26,19 @@ class TestAuthEndpoints:
         assert "token" in data
         assert "expires_at" in data
 
-    def test_set_guest_email(self):
-        response = client.post("/api/auth/guest/set-email", json={"email": "test@example.com"})
+    def test_guest_set_email(self):
+        guest = client.post("/api/auth/guest-session").json()
+        response = client.post("/api/auth/guest/set-email", json={
+            "guest_token": guest["token"],
+            "email": "test@example.com",
+        })
         assert response.status_code == 200
+
+    def test_me(self):
+        response = client.get("/api/auth/me")
+        assert response.status_code == 200
+        data = response.json()
+        assert "user_id" in data
 
 
 class TestTenantEndpoints:
@@ -58,7 +68,7 @@ class TestTenantEndpoints:
             "nombre": "Test",
             "regimen": "RESICO_PF",
         })
-        assert response.status_code == 400
+        assert response.status_code == 422
 
     def test_create_tenant_unsupported_regime(self):
         response = client.post("/api/tenants/", json={
@@ -68,7 +78,12 @@ class TestTenantEndpoints:
         })
         assert response.status_code == 422
         data = response.json()
-        assert "no está soportado" in data["detail"]
+        assert "no soportado" in data["detail"]
+
+    def test_list_tenants(self):
+        response = client.get("/api/tenants/")
+        assert response.status_code == 200
+        assert "tenants" in response.json()
 
 
 class TestOnboardingEndpoints:
@@ -99,6 +114,7 @@ class TestOnboardingEndpoints:
         data = response.json()
         assert data["admitido"] is True
         assert data["tipo_persona"] == "fisica"
+        assert "tenant_id" in data
 
     def test_confirmar_regimen_no_admitido(self):
         response = client.post("/api/onboarding/paso/confirmar-regimen", json={
@@ -127,7 +143,7 @@ class TestDocumentoEndpoints:
             params={"tenant_id": "test", "tipo": "xml_cfdi"},
             files={"file": ("test.exe", b"binary", "application/octet-stream")},
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert "no permitida" in response.json()["detail"]
 
 
@@ -156,6 +172,13 @@ class TestIntencionesEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "registered"
 
+    def test_registrar_intencion_plan_invalido(self):
+        response = client.post("/api/intenciones/", json={
+            "plan": "inexistente",
+        })
+        assert response.status_code == 422
+        assert "no válido" in response.json()["detail"]
+
 
 class TestListaEsperaEndpoints:
     def test_registrar_espera(self):
@@ -165,3 +188,35 @@ class TestListaEsperaEndpoints:
         })
         assert response.status_code == 200
         assert response.json()["status"] == "registered"
+
+
+class TestChatEndpoints:
+    def test_send_message(self):
+        response = client.post(
+            "/api/chat/mensaje",
+            params={"tenant_id": "test"},
+            json={"contenido": "Hola", "canal": "web"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "mensaje_id" in data
+        assert data["canal"] == "web"
+
+    def test_send_message_invalid_canal(self):
+        response = client.post(
+            "/api/chat/mensaje",
+            params={"tenant_id": "test"},
+            json={"contenido": "Hola", "canal": "telegram"},
+        )
+        assert response.status_code == 400
+
+    def test_historial(self):
+        response = client.get("/api/chat/historial", params={"tenant_id": "test"})
+        assert response.status_code == 200
+        assert "mensajes" in response.json()
+
+
+class TestCalculoEndpoints:
+    def test_compuertas_no_cfdis(self):
+        response = client.get("/api/calculo/compuertas/test-periodo")
+        assert response.status_code in (200, 404)
