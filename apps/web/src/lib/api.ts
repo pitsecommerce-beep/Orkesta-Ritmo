@@ -13,11 +13,21 @@ async function request<T = unknown>(path: string, opts: RequestOpts = {}): Promi
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      console.warn(
+        `[Orkesta Ritmo] No se pudo conectar al API (${API_BASE}). ¿Está corriendo el backend? Configura NEXT_PUBLIC_API_URL en .env.local si usas otra dirección.`,
+      );
+    }
+    throw new Error(`API no disponible: ${err instanceof Error ? err.message : err}`);
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");

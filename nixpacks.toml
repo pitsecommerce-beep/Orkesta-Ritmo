@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-10_x"]
+
+[phases.install]
+cmds = ["cd apps/web && npm ci"]
+
+[phases.build]
+cmds = [
+  "cd apps/web && npm run build",
+  "cp -r apps/web/public apps/web/.next/standalone/public",
+  "cp -r apps/web/.next/static apps/web/.next/standalone/.next/static"
+]
+
+[start]
+cmd = "cd apps/web/.next/standalone && PORT=${PORT:-3000} node server.js"
