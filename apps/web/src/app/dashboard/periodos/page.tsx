@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -10,29 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Link from "next/link";
-import { formatMXN } from "@/lib/utils";
-
-const MONTHS = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
-
-const MOCK_PERIODS = MONTHS.map((m, i) => ({
-  id: String(i + 1),
-  month: `${m} 2025`,
-  status: i < 1 ? "presentado" : i < 2 ? "preparado" : i < 3 ? "calculado" : "borrador",
-  isr: i < 3 ? 800 + Math.round(Math.random() * 500) : 0,
-  iva: i < 3 ? 2000 + Math.round(Math.random() * 1500) : 0,
-  cfdis: i < 3 ? 5 + Math.floor(Math.random() * 20) : 0,
-}));
-
-const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  borrador: { label: "Borrador", variant: "outline" },
-  calculado: { label: "Calculado", variant: "secondary" },
-  preparado: { label: "Preparado", variant: "default" },
-  presentado: { label: "Presentado", variant: "default" },
-};
+import { FolderOpen } from "lucide-react";
 
 export default function PeriodosPage() {
   return (
@@ -59,24 +36,19 @@ export default function PeriodosPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {MOCK_PERIODS.map((p) => {
-                  const badge = STATUS_MAP[p.status] ?? { label: p.status, variant: "outline" as const };
-                  return (
-                    <TableRow key={p.id}>
-                      <TableCell>
-                        <Link href={`/dashboard/periodos/${p.id}`} className="font-medium text-[var(--color-azul)] hover:underline">
-                          {p.month}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={badge.variant}>{badge.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">{p.isr ? formatMXN(p.isr) : "—"}</TableCell>
-                      <TableCell className="text-right font-mono">{p.iva ? formatMXN(p.iva) : "—"}</TableCell>
-                      <TableCell className="text-right">{p.cfdis || "—"}</TableCell>
-                    </TableRow>
-                  );
-                })}
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <FolderOpen className="h-10 w-10 text-muted-foreground/40" />
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        No hay períodos registrados
+                      </p>
+                      <p className="mt-1 max-w-sm text-xs text-muted-foreground/70">
+                        Los períodos se generan automáticamente al completar el onboarding y subir tus CFDIs.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </div>

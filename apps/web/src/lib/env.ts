@@ -1,12 +1,3 @@
-const REQUIRED_ENV = [
-  { key: "NEXT_PUBLIC_SUPABASE_URL", label: "Supabase URL" },
-  { key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", label: "Supabase Anon Key" },
-] as const;
-
-const OPTIONAL_ENV = [
-  { key: "NEXT_PUBLIC_API_URL", label: "API URL", fallback: "http://localhost:8000/api" },
-] as const;
-
 export type EnvStatus = {
   missing: { key: string; label: string }[];
   configured: { key: string; label: string }[];
@@ -16,21 +7,26 @@ export type EnvStatus = {
 export function checkEnv(): EnvStatus {
   const missing: EnvStatus["missing"] = [];
   const configured: EnvStatus["configured"] = [];
+  const optional: EnvStatus["optional"] = [];
 
-  for (const v of REQUIRED_ENV) {
-    const val = process.env[v.key];
-    if (!val) {
-      missing.push(v);
-    } else {
-      configured.push(v);
-    }
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (supabaseUrl) {
+    configured.push({ key: "NEXT_PUBLIC_SUPABASE_URL", label: "Supabase URL" });
+  } else {
+    missing.push({ key: "NEXT_PUBLIC_SUPABASE_URL", label: "Supabase URL" });
   }
 
-  const optional: EnvStatus["optional"] = [];
-  for (const v of OPTIONAL_ENV) {
-    if (!process.env[v.key]) {
-      optional.push(v);
-    }
+  if (supabaseKey) {
+    configured.push({ key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", label: "Supabase Anon Key" });
+  } else {
+    missing.push({ key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", label: "Supabase Anon Key" });
+  }
+
+  if (!apiUrl) {
+    optional.push({ key: "NEXT_PUBLIC_API_URL", label: "API URL", fallback: "http://localhost:8000/api" });
   }
 
   return { missing, configured, optional };

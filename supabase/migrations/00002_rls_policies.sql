@@ -115,14 +115,13 @@ CREATE POLICY memberships_delete ON memberships FOR DELETE
 -- Applied to all data tables
 -- ============================================================
 
--- Macro: for tables where contador and propietario can write
+-- Macro: for tables that have tenant_id directly
 DO $$
 DECLARE
     tbl TEXT;
 BEGIN
     FOR tbl IN SELECT unnest(ARRAY[
-        'periodos', 'cfdis', 'cfdi_impuestos', 'complementos_pago',
-        'doctos_relacionados', 'impuestos_dr', 'cfdi_nomina',
+        'periodos', 'cfdis', 'cfdi_nomina',
         'actividades', 'reglas_mapeo_cfdi', 'extractos_bancarios',
         'movimientos_bancarios', 'conciliaciones', 'documentos',
         'bitacora_periodos', 'chat_messages', 'consumo_ia'
@@ -146,6 +145,50 @@ BEGIN
         );
     END LOOP;
 END $$;
+
+-- ============================================================
+-- Child tables without tenant_id (join through parent)
+-- ============================================================
+
+-- cfdi_impuestos → cfdis.tenant_id
+CREATE POLICY cfdi_impuestos_tenant_select ON cfdi_impuestos FOR SELECT
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY cfdi_impuestos_tenant_insert ON cfdi_impuestos FOR INSERT
+    WITH CHECK (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY cfdi_impuestos_tenant_update ON cfdi_impuestos FOR UPDATE
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY cfdi_impuestos_tenant_delete ON cfdi_impuestos FOR DELETE
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+
+-- complementos_pago → cfdis.tenant_id
+CREATE POLICY complementos_pago_tenant_select ON complementos_pago FOR SELECT
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY complementos_pago_tenant_insert ON complementos_pago FOR INSERT
+    WITH CHECK (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY complementos_pago_tenant_update ON complementos_pago FOR UPDATE
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+CREATE POLICY complementos_pago_tenant_delete ON complementos_pago FOR DELETE
+    USING (cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())));
+
+-- doctos_relacionados → complementos_pago → cfdis.tenant_id
+CREATE POLICY doctos_relacionados_tenant_select ON doctos_relacionados FOR SELECT
+    USING (complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids()))));
+CREATE POLICY doctos_relacionados_tenant_insert ON doctos_relacionados FOR INSERT
+    WITH CHECK (complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids()))));
+CREATE POLICY doctos_relacionados_tenant_update ON doctos_relacionados FOR UPDATE
+    USING (complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids()))));
+CREATE POLICY doctos_relacionados_tenant_delete ON doctos_relacionados FOR DELETE
+    USING (complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids()))));
+
+-- impuestos_dr → doctos_relacionados → complementos_pago → cfdis.tenant_id
+CREATE POLICY impuestos_dr_tenant_select ON impuestos_dr FOR SELECT
+    USING (docto_id IN (SELECT id FROM doctos_relacionados WHERE complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())))));
+CREATE POLICY impuestos_dr_tenant_insert ON impuestos_dr FOR INSERT
+    WITH CHECK (docto_id IN (SELECT id FROM doctos_relacionados WHERE complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())))));
+CREATE POLICY impuestos_dr_tenant_update ON impuestos_dr FOR UPDATE
+    USING (docto_id IN (SELECT id FROM doctos_relacionados WHERE complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())))));
+CREATE POLICY impuestos_dr_tenant_delete ON impuestos_dr FOR DELETE
+    USING (docto_id IN (SELECT id FROM doctos_relacionados WHERE complemento_id IN (SELECT id FROM complementos_pago WHERE cfdi_id IN (SELECT id FROM cfdis WHERE tenant_id IN (SELECT get_user_tenant_ids())))));
 
 -- ============================================================
 -- BOVEDA: only propietario can access

@@ -2,24 +2,33 @@
 
 import { useEffect } from "react";
 
-const ENV_VARS = [
-  { key: "NEXT_PUBLIC_SUPABASE_URL", required: true },
-  { key: "NEXT_PUBLIC_SUPABASE_ANON_KEY", required: true },
-  { key: "NEXT_PUBLIC_API_URL", required: false, fallback: "http://localhost:8000/api" },
-];
+const ENV_SNAPSHOT = {
+  NEXT_PUBLIC_SUPABASE_URL: {
+    value: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    required: true,
+  },
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: {
+    value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    required: true,
+  },
+  NEXT_PUBLIC_API_URL: {
+    value: process.env.NEXT_PUBLIC_API_URL,
+    required: false,
+    fallback: "http://localhost:8000/api",
+  },
+};
 
 export function EnvChecker() {
   useEffect(() => {
     const missing: string[] = [];
     const optional: string[] = [];
 
-    for (const v of ENV_VARS) {
-      const val = process.env[v.key];
-      if (!val) {
+    for (const [key, v] of Object.entries(ENV_SNAPSHOT)) {
+      if (!v.value) {
         if (v.required) {
-          missing.push(v.key);
+          missing.push(key);
         } else {
-          optional.push(`${v.key} (usando fallback: ${v.fallback})`);
+          optional.push(`${key} (usando fallback: ${"fallback" in v ? v.fallback : "—"})`);
         }
       }
     }
@@ -29,9 +38,9 @@ export function EnvChecker() {
         `%c[Orkesta Ritmo] Variables de entorno faltantes:%c\n\n` +
           missing.map((k) => `  • ${k}`).join("\n") +
           "\n\n" +
-          "Crea un archivo .env.local en apps/web/ con estas variables.\n" +
-          "La app funciona en modo demo sin ellas, pero la autenticación y datos reales no estarán disponibles.\n" +
-          "Consulta .env.example en la raíz del proyecto para ver todas las variables disponibles.",
+          "Configura estas variables en tu entorno de despliegue (Railway, Vercel, etc.)\n" +
+          "o crea un archivo .env.local en apps/web/ para desarrollo local.\n" +
+          "La app funciona en modo demo sin ellas, pero la autenticación y datos reales no estarán disponibles.",
         "color: #ff9800; font-weight: bold; font-size: 14px",
         "color: #ff9800",
       );
