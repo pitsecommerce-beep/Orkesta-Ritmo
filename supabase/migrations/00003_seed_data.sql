@@ -316,36 +316,3 @@ INSERT INTO cuestionario_transiciones (nodo_origen, opcion_id, nodo_destino) VAL
     ('C2', 'c2000000-0000-0000-0000-000000000001', 'A1'),
     ('C2', 'c2000000-0000-0000-0000-000000000002', 'C1');
 
--- ============================================================
--- DEMO SEED: RESICO PF contributor
--- ============================================================
-
-INSERT INTO tenants (id, rfc, nombre, tipo_persona, regimen, tipo_deduccion, presenta_anual, onboarding_completado) VALUES
-    ('d0000000-0000-0000-0000-000000000001', 'XAXX010101001', 'María García López (Demo RESICO)', 'fisica', 'RESICO_PF', 'ciega', false, true);
-
-INSERT INTO tenants (id, rfc, nombre, tipo_persona, regimen, tipo_deduccion, presenta_anual, onboarding_completado) VALUES
-    ('d0000000-0000-0000-0000-000000000002', 'XAXX010101002', 'José Hernández Ruiz (Demo Arrendamiento)', 'fisica', 'ARRENDAMIENTO', 'ciega', false, true);
-
--- Demo periods for RESICO PF - 2025
-INSERT INTO periodos (tenant_id, impuesto, tipo_periodo, ejercicio, numero_periodo, fecha_limite, estado) VALUES
-    ('d0000000-0000-0000-0000-000000000001', 'ISR', 'mensual', 2025, 1, '2025-02-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000001', 'IVA', 'mensual', 2025, 1, '2025-02-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000001', 'ISR', 'mensual', 2025, 2, '2025-03-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000001', 'IVA', 'mensual', 2025, 2, '2025-03-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000001', 'ISR', 'mensual', 2025, 3, '2025-04-17', 'calculado'),
-    ('d0000000-0000-0000-0000-000000000001', 'IVA', 'mensual', 2025, 3, '2025-04-17', 'calculado');
-
--- Demo periods for Arrendamiento - 2025
-INSERT INTO periodos (tenant_id, impuesto, tipo_periodo, ejercicio, numero_periodo, fecha_limite, estado) VALUES
-    ('d0000000-0000-0000-0000-000000000002', 'ISR', 'mensual', 2025, 1, '2025-02-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000002', 'IVA', 'mensual', 2025, 1, '2025-02-17', 'presentado'),
-    ('d0000000-0000-0000-0000-000000000002', 'ISR', 'mensual', 2025, 2, '2025-03-17', 'borrador'),
-    ('d0000000-0000-0000-0000-000000000002', 'IVA', 'mensual', 2025, 2, '2025-03-17', 'borrador');
-
--- Demo activity for RESICO PF
-INSERT INTO actividades (id, tenant_id, descripcion, resultado, cuestionario_completado) VALUES
-    ('act00000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'Venta de productos electrónicos', 'IVA16', true);
-
--- Demo activity for Arrendamiento
-INSERT INTO actividades (id, tenant_id, descripcion, resultado, cuestionario_completado) VALUES
-    ('act00000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000002', 'Renta de local comercial', 'IVA16', true);

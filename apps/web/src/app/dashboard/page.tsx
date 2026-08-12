@@ -1,40 +1,16 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import Link from "next/link";
 import {
   Calendar,
   FileText,
-  AlertTriangle,
-  CheckCircle,
   Clock,
-  ArrowRight,
+  FolderOpen,
 } from "lucide-react";
 import { formatMXN } from "@/lib/utils";
 
-const MOCK_PERIODS = [
-  { id: "1", month: "Enero 2025", status: "presentado", isr: 1250.0, iva: 3200.0 },
-  { id: "2", month: "Febrero 2025", status: "preparado", isr: 980.5, iva: 2800.0 },
-  { id: "3", month: "Marzo 2025", status: "calculado", isr: 1100.0, iva: 3100.0 },
-  { id: "4", month: "Abril 2025", status: "borrador", isr: 0, iva: 0 },
-];
-
-const STATUS_BADGES: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
-  borrador: { label: "Borrador", variant: "outline" },
-  calculado: { label: "Calculado", variant: "secondary" },
-  contrastado: { label: "Contrastado", variant: "secondary" },
-  preparado: { label: "Preparado", variant: "default" },
-  presentado: { label: "Presentado", variant: "default" },
-  cerrado: { label: "Cerrado", variant: "default" },
-  con_diferencia: { label: "Con diferencia", variant: "destructive" },
-  requiere_revision: { label: "Requiere revisión", variant: "destructive" },
-};
-
 export default function DashboardHome() {
-  const pending = MOCK_PERIODS.filter((p) => !["presentado", "cerrado"].includes(p.status));
-
   return (
     <div className="p-6 lg:p-8">
       <div className="animate-fade-in-up mb-8">
@@ -50,8 +26,8 @@ export default function DashboardHome() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono">{pending.length}</p>
-            <p className="text-xs text-muted-foreground">de {MOCK_PERIODS.length} obligaciones</p>
+            <p className="text-2xl font-bold font-mono">0</p>
+            <p className="text-xs text-muted-foreground">de 0 obligaciones</p>
           </CardContent>
         </Card>
         <Card className="animate-fade-in-up stagger-2 card-hover shadow-[var(--shadow-warm-sm)]">
@@ -60,7 +36,7 @@ export default function DashboardHome() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono">{formatMXN(MOCK_PERIODS.reduce((s, p) => s + p.isr, 0))}</p>
+            <p className="text-2xl font-bold font-mono">{formatMXN(0)}</p>
             <p className="text-xs text-muted-foreground">Pagos definitivos</p>
           </CardContent>
         </Card>
@@ -70,7 +46,7 @@ export default function DashboardHome() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono">{formatMXN(MOCK_PERIODS.reduce((s, p) => s + p.iva, 0))}</p>
+            <p className="text-2xl font-bold font-mono">{formatMXN(0)}</p>
             <p className="text-xs text-muted-foreground">Trasladado - Acreditable</p>
           </CardContent>
         </Card>
@@ -80,54 +56,26 @@ export default function DashboardHome() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold font-mono">
-              {Math.round((MOCK_PERIODS.filter((p) => p.status === "presentado").length / 12) * 100)}%
-            </p>
-            <Progress
-              value={(MOCK_PERIODS.filter((p) => p.status === "presentado").length / 12) * 100}
-              className="mt-2 h-2"
-            />
+            <p className="text-2xl font-bold font-mono">0%</p>
+            <Progress value={0} className="mt-2 h-2" />
           </CardContent>
         </Card>
       </div>
 
-      {/* Pending obligations */}
+      {/* Empty state */}
       <Card className="mt-8 animate-fade-in-up stagger-5 shadow-[var(--shadow-warm-sm)]">
         <CardHeader>
           <CardTitle className="font-heading text-lg">Obligaciones del período</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {MOCK_PERIODS.map((p) => {
-              const badge = STATUS_BADGES[p.status] ?? { label: p.status, variant: "outline" as const };
-              return (
-                <Link
-                  key={p.id}
-                  href={`/dashboard/periodos/${p.id}`}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-all hover:bg-[var(--color-primary-light)]"
-                >
-                  <div className="flex items-center gap-3">
-                    {p.status === "presentado" ? (
-                      <CheckCircle className="h-5 w-5 text-[var(--color-success)]" />
-                    ) : p.status === "borrador" ? (
-                      <AlertTriangle className="h-5 w-5 text-[var(--color-warning)]" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-[var(--color-azul)]" />
-                    )}
-                    <div>
-                      <p className="font-medium">{p.month}</p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        ISR: {formatMXN(p.isr)} · IVA: {formatMXN(p.iva)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={badge.variant}>{badge.label}</Badge>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <FolderOpen className="h-12 w-12 text-muted-foreground/40" />
+            <p className="mt-4 text-sm font-medium text-muted-foreground">
+              No hay períodos registrados
+            </p>
+            <p className="mt-1 max-w-sm text-xs text-muted-foreground/70">
+              Sube tus CFDIs y completa el onboarding para generar tus obligaciones fiscales.
+            </p>
           </div>
         </CardContent>
       </Card>
