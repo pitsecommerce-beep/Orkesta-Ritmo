@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, ArrowRight, Loader2, CloudOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { isSupabaseConfigured } from "@/lib/env";
+
+const supabaseReady = isSupabaseConfigured();
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,7 +26,6 @@ export default function LoginPage() {
 
     const supabase = createClient();
     if (!supabase) {
-      setError("Supabase no está configurado. Contacta al administrador.");
       setLoading(false);
       return;
     }
@@ -58,7 +60,17 @@ export default function LoginPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {sent ? (
+          {!supabaseReady ? (
+            <div className="text-center">
+              <CloudOff className="mx-auto h-10 w-10 text-muted-foreground" />
+              <p className="mt-4 text-sm text-muted-foreground">
+                Login disponible en produccion.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Las variables de entorno de Supabase se configuran en Railway.
+              </p>
+            </div>
+          ) : sent ? (
             <div className="text-center">
               <Mail className="mx-auto h-10 w-10 text-[var(--color-azul)]" />
               <p className="mt-4 text-sm text-muted-foreground">
