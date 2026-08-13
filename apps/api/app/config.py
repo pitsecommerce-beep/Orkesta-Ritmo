@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     chat_messages_per_month_essential: int = 100
     chat_messages_per_month_complete: int = 500
 
+    site_url: str = "http://localhost:3000"
+
     api_port: int = 8000
     next_public_api_url: str = "http://localhost:8000"
 
