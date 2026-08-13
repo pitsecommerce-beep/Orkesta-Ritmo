@@ -6,6 +6,21 @@ from app.db import get_supabase, require_auth
 router = APIRouter()
 
 
+async def _require_email_verificado(db: Client, user_id: str):
+    resp = (
+        db.table("user_profiles")
+        .select("email_verificado")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
+    if not resp.data or not resp.data.get("email_verificado"):
+        raise HTTPException(
+            status_code=403,
+            detail="Debes verificar tu correo electronico para realizar esta accion.",
+        )
+
+
 @router.post("/ejecutar")
 async def ejecutar_calculo(
     tenant_id: str = Query(...),
@@ -13,6 +28,8 @@ async def ejecutar_calculo(
     db: Client = Depends(get_supabase),
     user_id: str = Depends(require_auth),
 ):
+    await _require_email_verificado(db, user_id)
+
     periodo_resp = (
         db.table("periodos")
         .select("*")

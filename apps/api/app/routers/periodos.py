@@ -76,6 +76,19 @@ async def marcar_presentado(
     db: Client = Depends(get_supabase),
     user_id: str = Depends(require_auth),
 ):
+    profile_resp = (
+        db.table("user_profiles")
+        .select("email_verificado")
+        .eq("id", user_id)
+        .single()
+        .execute()
+    )
+    if not profile_resp.data or not profile_resp.data.get("email_verificado"):
+        raise HTTPException(
+            status_code=403,
+            detail="Debes verificar tu correo electronico para presentar la declaracion.",
+        )
+
     current = db.table("periodos").select("estado, tenant_id").eq("id", periodo_id).single().execute()
     if not current.data:
         raise HTTPException(status_code=404, detail="Periodo no encontrado.")

@@ -14,6 +14,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Inicio", icon: Home },
@@ -68,6 +69,13 @@ export function Sidebar() {
           Configuración
         </Link>
         <button
+          onClick={async () => {
+            const supabase = createClient();
+            if (supabase) {
+              await supabase.auth.signOut();
+              window.location.href = "/auth/login";
+            }
+          }}
           className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
         >
           <LogOut className="h-4 w-4" />
