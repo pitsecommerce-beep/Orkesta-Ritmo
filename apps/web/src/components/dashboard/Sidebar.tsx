@@ -12,9 +12,12 @@ import {
   MessageSquare,
   Settings,
   LogOut,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
+import { Switch } from "@/components/ui/switch";
+import { useDemoMode } from "@/hooks/use-demo-mode";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +41,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { demoMode, setDemoMode } = useDemoMode();
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-background animate-slide-in-left">
@@ -72,6 +76,18 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t p-3 space-y-0.5">
+        <div className="flex items-center justify-between rounded-md px-3 py-2">
+          <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
+            <FlaskConical className="h-4 w-4" />
+            Demo
+          </div>
+          <Switch
+            checked={demoMode}
+            onCheckedChange={setDemoMode}
+            aria-label="Modo demo"
+          />
+        </div>
+
         <Link
           href="/dashboard/configuracion"
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
