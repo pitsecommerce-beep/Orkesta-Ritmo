@@ -39,9 +39,9 @@ export function EmailVerificationBanner() {
         .from("user_profiles")
         .select("email_verificado")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (profile && !profile.email_verificado) {
+      if (!profile || !profile.email_verificado) {
         setShow(true);
       }
     }
