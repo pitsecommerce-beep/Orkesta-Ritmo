@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from supabase import Client
 
 from app.db import get_supabase, get_current_user_id, require_auth
+from app.config import get_settings
 
 router = APIRouter()
 
@@ -33,7 +34,13 @@ async def send_magic_link(
     db: Client = Depends(get_supabase),
 ):
     try:
-        db.auth.sign_in_with_otp({"email": req.email})
+        settings = get_settings()
+        db.auth.sign_in_with_otp({
+            "email": req.email,
+            "options": {
+                "email_redirect_to": f"{settings.site_url}/auth/callback",
+            },
+        })
     except Exception:
         pass
     return {
