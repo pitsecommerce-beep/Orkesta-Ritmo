@@ -14,10 +14,22 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Inicio", icon: Home },
-  { href: "/dashboard/periodos", label: "Períodos", icon: Calendar },
+  { href: "/dashboard/periodos", label: "Periodos", icon: Calendar },
   { href: "/dashboard/documentos", label: "Documentos", icon: Upload },
   { href: "/dashboard/cfdis", label: "CFDIs", icon: FileText },
   { href: "/dashboard/extractos", label: "Extractos", icon: Building2 },
@@ -65,14 +77,39 @@ export function Sidebar() {
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
         >
           <Settings className="h-4 w-4" />
-          Configuración
+          Configuracion
         </Link>
-        <button
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
-        >
-          <LogOut className="h-4 w-4" />
-          Cerrar sesión
-        </button>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all">
+              <LogOut className="h-4 w-4" />
+              Cerrar sesion
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cerrar sesion</AlertDialogTitle>
+              <AlertDialogDescription>
+                Estas seguro de que quieres cerrar tu sesion?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  const supabase = createClient();
+                  if (supabase) {
+                    await supabase.auth.signOut();
+                    window.location.href = "/auth/login";
+                  }
+                }}
+              >
+                Cerrar sesion
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </aside>
   );
