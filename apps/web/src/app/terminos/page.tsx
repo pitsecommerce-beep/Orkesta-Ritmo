@@ -43,7 +43,7 @@ export default function TerminosPage() {
             <h2 className="font-heading text-lg font-semibold text-foreground">3. Regímenes soportados</h2>
             <p className="mt-2">
               Ritmo soporta exclusivamente: RESICO Persona Física, RESICO PF con Sueldos,
-              Arrendamiento, Arrendamiento con Sueldos y RESICO Persona Moral.
+              Arrendamiento y Arrendamiento con Sueldos.
               Cualquier otro régimen será dirigido a una lista de espera.
             </p>
           </section>

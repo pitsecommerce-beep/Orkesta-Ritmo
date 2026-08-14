@@ -12,6 +12,7 @@ RESICO PF es un pago definitivo mensual:
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
+from tax_engine.exceptions import EjercicioNoDisponibleError
 from tax_engine.tarifas_fallback import buscar_tramo_resico
 from tax_engine.types import (
     DesgloseISR,
@@ -34,6 +35,9 @@ def calcular_isr_resico_pf(
     Returns:
         Tupla de (DesgloseISR, alertas).
     """
+    if not tarifas_resico:
+        raise EjercicioNoDisponibleError(0, "No tiene tarifas RESICO cargadas.")
+
     alertas: list[str] = []
     trazabilidad: list[TrazabilidadCfdi] = []
 
@@ -61,32 +65,20 @@ def calcular_isr_resico_pf(
         tramo = buscar_tramo_resico(base_gravable, tarifas_resico)
 
         if tramo is None:
-            # Ingreso excede el limite superior del ultimo tramo
             alertas.append(
                 f"Ingreso mensual ({base_gravable}) excede el limite maximo "
-                f"de la tarifa RESICO. Verificar si el contribuyente debe "
-                f"cambiar de regimen."
+                f"de la tarifa RESICO. No se puede calcular ISR. "
+                f"Verificar si el contribuyente debe cambiar de regimen."
             )
-            # Aplicar la tasa del ultimo tramo como mejor estimacion
-            if tarifas_resico:
-                ultimo_tramo = tarifas_resico[-1]
-                impuesto_determinado = base_gravable * ultimo_tramo.tasa / Decimal("100")
-                alertas.append(
-                    f"Se aplico la tasa del ultimo tramo ({ultimo_tramo.tasa}%) "
-                    f"como estimacion."
-                )
         else:
             impuesto_determinado = base_gravable * tramo.tasa / Decimal("100")
 
-    # ISR a pagar = impuesto determinado - retenciones
-    isr_a_pagar = impuesto_determinado - retenciones_isr
-
-    # ISR a pagar no puede ser negativo (genera saldo a favor)
-    if isr_a_pagar < Decimal("0"):
+    isr_a_cargo = impuesto_determinado - retenciones_isr
+    if isr_a_cargo < Decimal("0"):
         alertas.append(
             f"Retenciones ISR ({retenciones_isr}) superan el impuesto "
             f"determinado ({impuesto_determinado}). Saldo a favor: "
-            f"{abs(isr_a_pagar)}"
+            f"{abs(isr_a_cargo)}"
         )
 
     desglose = DesgloseISR(
@@ -95,7 +87,7 @@ def calcular_isr_resico_pf(
         base_gravable=base_gravable,
         impuesto_determinado=impuesto_determinado,
         retenciones_isr=retenciones_isr,
-        isr_a_pagar=isr_a_pagar,
+        isr_a_cargo=isr_a_cargo,
         trazabilidad=trazabilidad,
     )
 

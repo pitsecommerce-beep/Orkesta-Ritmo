@@ -7,8 +7,11 @@ from decimal import Decimal
 
 import pytest
 
+from tax_engine.arrendamiento import calcular_isr_arrendamiento
+from tax_engine.clasificador import clasificar_cfdis
 from tax_engine.engine import calcular
-from tax_engine.exceptions import EjercicioNoDisponibleError
+from tax_engine.exceptions import EjercicioNoDisponibleError, RegimenEnValidacionError
+from tax_engine.resico_pf import calcular_isr_resico_pf
 from tax_engine.types import PerfilFiscal, Regimen
 from tests.conftest import make_cfdi_pue
 
@@ -46,19 +49,36 @@ class TestEjercicioNoDisponible:
         assert exc_info.value.year == 2026
         assert "Art. 96" in exc_info.value.motivo
 
-    def test_2026_resico_pm_tarifas_vacias_lanza_error(self):
+    def test_resico_pm_lanza_regimen_en_validacion(self):
+        """RESICO PM lanza RegimenEnValidacionError antes de verificar tarifas."""
         cfdi = make_cfdi_pue(uuid="test-nd-04", subtotal=Decimal("10000"))
         perfil = PerfilFiscal(regimen=Regimen.RESICO_PM, rfc="XAX010101000")
 
-        with pytest.raises(EjercicioNoDisponibleError) as exc_info:
-            calcular([cfdi], perfil, ejercicio_year=2026, periodo=1)
+        with pytest.raises(RegimenEnValidacionError) as exc_info:
+            calcular([cfdi], perfil, ejercicio_year=2025, periodo=1)
 
-        assert exc_info.value.year == 2026
+        assert exc_info.value.regimen == "RESICO_PM"
 
     def test_es_subclase_de_exception(self):
         err = EjercicioNoDisponibleError(2026, "sin tarifas")
         assert isinstance(err, Exception)
         assert not isinstance(err, ValueError)
+
+    def test_resico_pf_directo_tarifas_vacias(self):
+        """calcular_isr_resico_pf lanza error con tarifas vacias."""
+        cfdi = make_cfdi_pue(uuid="test-nd-direct-01", subtotal=Decimal("10000"))
+        clasificados = clasificar_cfdis([cfdi])
+
+        with pytest.raises(EjercicioNoDisponibleError):
+            calcular_isr_resico_pf(clasificados, tarifas_resico=[])
+
+    def test_arrendamiento_directo_tarifas_vacias(self):
+        """calcular_isr_arrendamiento lanza error con tarifas vacias."""
+        cfdi = make_cfdi_pue(uuid="test-nd-direct-02", subtotal=Decimal("10000"))
+        clasificados = clasificar_cfdis([cfdi])
+
+        with pytest.raises(EjercicioNoDisponibleError):
+            calcular_isr_arrendamiento(clasificados, tarifas_art96=[])
 
 
 class TestEjercicio2025SigueFuncionando:
@@ -70,7 +90,7 @@ class TestEjercicio2025SigueFuncionando:
         resultado = calcular([cfdi], perfil, ejercicio_year=2025, periodo=1)
 
         assert resultado.isr.ingresos == Decimal("20000")
-        assert resultado.isr.isr_a_pagar > Decimal("0")
+        assert resultado.isr.isr_a_cargo > Decimal("0")
 
     def test_arrendamiento_2025_calcula(self):
         cfdi = make_cfdi_pue(uuid="test-ok-02", subtotal=Decimal("30000"))
@@ -78,4 +98,4 @@ class TestEjercicio2025SigueFuncionando:
         resultado = calcular([cfdi], perfil, ejercicio_year=2025, periodo=1)
 
         assert resultado.isr.ingresos == Decimal("30000")
-        assert resultado.isr.isr_a_pagar >= Decimal("0")
+        assert resultado.isr.isr_a_cargo >= Decimal("0")

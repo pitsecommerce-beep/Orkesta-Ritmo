@@ -1,19 +1,20 @@
 """
-Calculo de ISR para regimen de Arrendamiento.
+Cálculo de ISR para régimen de Arrendamiento.
 
 Arrendamiento es un pago provisional mensual (o trimestral):
 - Ingreso del periodo (mensual o trimestral), NUNCA acumulado desde enero.
-- Deduccion ciega del 35% del ingreso.
-- Base gravable = ingreso - deduccion.
+- Deducción opcional del 35% del ingreso (Art. 115 LISR).
+- Base gravable = ingreso - deducción.
 - ISR se calcula con tarifa Art. 96: (base - lim_inf) * % + cuota_fija.
 - Se restan retenciones de ISR (10% cuando se factura a persona moral).
 
-Para trimestral: la tarifa mensual se triplica en cuota fija y limites.
+Para trimestral: la tarifa mensual se triplica en cuota fija y límites.
 """
 
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
+from tax_engine.exceptions import EjercicioNoDisponibleError
 from tax_engine.tarifas_fallback import buscar_tramo_art96
 from tax_engine.types import (
     DesgloseISR,
@@ -49,7 +50,7 @@ def _triplicar_tarifa(tarifas: list[TramoArt96]) -> list[TramoArt96]:
 def calcular_isr_arrendamiento(
     cfdis_clasificados: list[CfdiClasificado],
     tarifas_art96: list[TramoArt96],
-    tipo_deduccion: str = "ciega",
+    tipo_deduccion: str = "opcional",
     opcion_trimestral: bool = False,
 ) -> tuple[DesgloseISR, list[str]]:
     """
@@ -64,6 +65,9 @@ def calcular_isr_arrendamiento(
     Returns:
         Tupla de (DesgloseISR, alertas).
     """
+    if not tarifas_art96:
+        raise EjercicioNoDisponibleError(0, "No tiene tarifas Art. 96 cargadas.")
+
     alertas: list[str] = []
     trazabilidad: list[TrazabilidadCfdi] = []
 
@@ -86,13 +90,12 @@ def calcular_isr_arrendamiento(
         trazabilidad.extend(cfdi.trazabilidad)
 
     # Calcular deduccion
-    if tipo_deduccion == "ciega":
+    if tipo_deduccion == "opcional":
         deducciones = ingresos * Decimal("35") / Decimal("100")
     else:
-        # Iteracion 1 solo soporta deduccion ciega
         alertas.append(
-            f"Tipo de deduccion '{tipo_deduccion}' no soportado. "
-            f"Usando deduccion ciega (35%)."
+            f"Tipo de deducción '{tipo_deduccion}' no soportado. "
+            f"Usando deducción opcional (35%)."
         )
         deducciones = ingresos * Decimal("35") / Decimal("100")
 
@@ -116,13 +119,13 @@ def calcular_isr_arrendamiento(
             impuesto_determinado = impuesto_excedente + tramo.cuota_fija
 
     # ISR a pagar
-    isr_a_pagar = impuesto_determinado - retenciones_isr
+    isr_a_cargo = impuesto_determinado - retenciones_isr
 
-    if isr_a_pagar < Decimal("0"):
+    if isr_a_cargo < Decimal("0"):
         alertas.append(
             f"Retenciones ISR ({retenciones_isr}) superan el impuesto "
             f"determinado ({impuesto_determinado}). Saldo a favor: "
-            f"{abs(isr_a_pagar)}"
+            f"{abs(isr_a_cargo)}"
         )
 
     desglose = DesgloseISR(
@@ -131,7 +134,7 @@ def calcular_isr_arrendamiento(
         base_gravable=base_gravable,
         impuesto_determinado=impuesto_determinado,
         retenciones_isr=retenciones_isr,
-        isr_a_pagar=isr_a_pagar,
+        isr_a_cargo=isr_a_cargo,
         trazabilidad=trazabilidad,
     )
 

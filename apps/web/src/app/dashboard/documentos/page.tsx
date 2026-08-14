@@ -83,15 +83,15 @@ const PROCESS_STEPS = [
   },
   {
     num: 3,
-    title: "Calcula tu declaracion",
-    description: "Revisa tus periodos y ejecuta el calculo fiscal.",
+    title: "Calcula tu declaración",
+    description: "Revisa tus periodos y ejecuta el cálculo fiscal.",
     icon: Calculator,
     docType: null,
   },
   {
     num: 4,
-    title: "Obtener linea de captura",
-    description: "Genera tu linea de captura para pagar en el portal del SAT.",
+    title: "Presenta en el SAT",
+    description: "Descarga tu pre-declaración y preséntala en el portal del SAT.",
     icon: Receipt,
     docType: null,
   },
@@ -165,7 +165,7 @@ export default function DocumentosPage() {
       <div className="animate-fade-in-up">
         <h1 className="font-heading text-2xl font-bold">Documentos</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Sigue estos pasos para preparar tu declaracion y obtener tu linea de captura.
+          Sigue estos pasos para preparar tu declaración fiscal.
         </p>
       </div>
 
@@ -237,13 +237,13 @@ export default function DocumentosPage() {
                   ? "Sube tus CFDIs (XML)"
                   : activeStep === 2
                     ? "Sube tu estado de cuenta (CSV / XLSX)"
-                    : "Arrastra tus archivos aqui"}
+                    : "Arrastra tus archivos aquí"}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 o haz clic para seleccionar
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                Formatos: {[...new Set(extensions)].join(", ")} — Maximo 10 MB
+                Formatos: {[...new Set(extensions)].join(", ")} — Máximo 10 MB
               </p>
               <Button variant="outline" className="mt-4 gap-2">
                 <Upload className="h-4 w-4" /> Seleccionar archivos
@@ -259,7 +259,7 @@ export default function DocumentosPage() {
             <Calculator className="h-10 w-10 text-[var(--color-azul)]" />
             <p className="mt-4 font-heading font-semibold">Listo para calcular</p>
             <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-              Tus documentos estan procesados. Ve a Periodos para ejecutar el calculo fiscal y generar tu declaracion.
+              Tus documentos están procesados. Ve a Periodos para ejecutar el cálculo fiscal y generar tu declaración.
             </p>
             <Link href="/dashboard/periodos">
               <Button className="mt-4 gap-2">
@@ -291,7 +291,7 @@ export default function DocumentosPage() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Fecha</TableHead>
-                    <TableHead className="text-right">Tamano</TableHead>
+                    <TableHead className="text-right">Tamaño</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -11,7 +11,6 @@ router = APIRouter()
 REGIMENES_ADMITIDOS = [
     "RESICO_PF", "RESICO_PF_SUELDOS",
     "ARRENDAMIENTO", "ARRENDAMIENTO_SUELDOS",
-    "RESICO_PM",
 ]
 
 RFC_PATTERN = re.compile(r"^[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$")

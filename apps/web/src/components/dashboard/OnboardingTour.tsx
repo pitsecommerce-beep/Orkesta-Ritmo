@@ -20,25 +20,25 @@ const STEPS = [
   {
     icon: Sparkles,
     title: "Bienvenido a Ritmo",
-    body: "Tu herramienta para preparar y calcular tus declaraciones fiscales RESICO de forma sencilla. Te explicamos como funciona en 5 pasos rapidos.",
+    body: "Tu herramienta para preparar y calcular tus declaraciones fiscales de forma sencilla. Te explicamos cómo funciona en 5 pasos rápidos.",
     target: null,
   },
   {
     icon: Upload,
     title: "1. Sube tus documentos",
-    body: "En la seccion de Documentos sube tus CFDIs (archivos XML) y estados de cuenta bancarios. El sistema los procesa y clasifica automaticamente.",
+    body: "En la sección de Documentos sube tus CFDIs (archivos XML) y estados de cuenta bancarios. El sistema los procesa y clasifica automáticamente.",
     target: "/dashboard/documentos",
   },
   {
     icon: Calendar,
     title: "2. Revisa tus periodos",
-    body: "En Periodos veras tus obligaciones fiscales mensuales organizadas por ISR e IVA. Cada periodo muestra su estado y fecha limite.",
+    body: "En Periodos verás tus obligaciones fiscales mensuales organizadas por ISR e IVA. Cada periodo muestra su estado y fecha límite.",
     target: "/dashboard/periodos",
   },
   {
     icon: Calculator,
-    title: "3. Calcula tu declaracion",
-    body: "Cuando tus documentos esten procesados, ejecuta el calculo fiscal. El motor de Ritmo aplica las tarifas RESICO vigentes y genera el desglose completo.",
+    title: "3. Calcula tu declaración",
+    body: "Cuando tus documentos estén procesados, ejecuta el cálculo fiscal. El motor de Ritmo aplica las tarifas vigentes de tu régimen y genera el desglose completo.",
     target: "/dashboard/periodos",
   },
   {
@@ -50,7 +50,7 @@ const STEPS = [
   {
     icon: MessageSquare,
     title: "5. Asistente fiscal",
-    body: "Si tienes dudas, el Asistente esta disponible en el panel lateral para responder preguntas sobre tu situacion fiscal.",
+    body: "Si tienes dudas, el Asistente está disponible en el panel lateral para responder preguntas sobre tu situación fiscal.",
     target: "/dashboard/chat",
   },
 ];
@@ -319,7 +319,7 @@ function PopoverContent({
               onClick={onPrev}
               className="gap-1"
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Atras
+              <ArrowLeft className="h-3.5 w-3.5" /> Atrás
             </Button>
           )}
           {isLast ? (

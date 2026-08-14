@@ -15,3 +15,20 @@ class EjercicioNoDisponibleError(Exception):
         if motivo:
             msg += f": {motivo}"
         super().__init__(msg)
+
+
+class RegimenEnValidacionError(Exception):
+    """El regimen solicitado esta temporalmente deshabilitado.
+
+    RESICO PM usa tarifas de PF que no son correctas para PM.
+    Hasta que se implemente la tarifa correcta, el motor rechaza
+    el calculo en lugar de producir resultados incorrectos.
+    """
+
+    def __init__(self, regimen: str, motivo: str = "") -> None:
+        self.regimen = regimen
+        self.motivo = motivo
+        msg = f"Regimen {regimen} en validacion"
+        if motivo:
+            msg += f": {motivo}"
+        super().__init__(msg)

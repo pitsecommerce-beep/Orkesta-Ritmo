@@ -26,7 +26,7 @@ const ESTADO_LABELS: Record<string, string> = {
   presentado: "Presentado",
   cerrado: "Cerrado",
   con_diferencia: "Con diferencia",
-  requiere_revision: "Requiere revision",
+  requiere_revision: "Requiere revisión",
   omitido: "Omitido",
 };
 
@@ -59,9 +59,9 @@ interface PeriodoRow {
 }
 
 const MOCK_PERIODOS: PeriodoRow[] = [
-  { id: "m1", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { isr_pago: 1250 } },
+  { id: "m1", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { isr_a_cargo: 1250 } },
   { id: "m2", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { iva_determinado: 1856 } },
-  { id: "m3", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "calculado", resultado_json: { isr_pago: 2100 } },
+  { id: "m3", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "calculado", resultado_json: { isr_a_cargo: 2100 } },
   { id: "m4", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "borrador", resultado_json: null },
   { id: "m5", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 3, fecha_limite: "2025-04-17", estado: "borrador", resultado_json: null },
   { id: "m6", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 3, fecha_limite: "2025-04-17", estado: "borrador", resultado_json: null },
@@ -103,7 +103,7 @@ export default function PeriodosPage() {
 
   function getAmount(p: PeriodoRow): number {
     if (!p.resultado_json) return 0;
-    if (p.impuesto === "ISR") return Number(p.resultado_json.isr_pago) || 0;
+    if (p.impuesto === "ISR") return Number(p.resultado_json.isr_a_cargo) || 0;
     if (p.impuesto === "IVA") return Number(p.resultado_json.iva_determinado) || 0;
     return 0;
   }
@@ -134,7 +134,7 @@ export default function PeriodosPage() {
                     <TableHead>Periodo</TableHead>
                     <TableHead>Impuesto</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Fecha limite</TableHead>
+                    <TableHead>Fecha límite</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -170,7 +170,7 @@ export default function PeriodosPage() {
                 No hay periodos registrados
               </p>
               <p className="mt-1 max-w-sm text-xs text-muted-foreground/70">
-                Los periodos se generan automaticamente al completar el onboarding y subir tus CFDIs.
+                Los periodos se generan automáticamente al completar el onboarding y subir tus CFDIs.
               </p>
             </div>
           )}

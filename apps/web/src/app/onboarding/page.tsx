@@ -23,7 +23,6 @@ const REGIMES_ALLOWED = [
   { value: "resico_pf_sueldos", label: "RESICO PF + Sueldos" },
   { value: "arrendamiento", label: "Arrendamiento" },
   { value: "arrendamiento_sueldos", label: "Arrendamiento + Sueldos" },
-  { value: "resico_pm", label: "RESICO Persona Moral" },
 ];
 
 const PERSON_TYPES = [

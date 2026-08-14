@@ -25,15 +25,14 @@ import {
 } from "lucide-react";
 
 const REGIMENES = [
-  { value: "RESICO_PF", label: "RESICO Persona Fisica" },
+  { value: "RESICO_PF", label: "RESICO Persona Física" },
   { value: "RESICO_PF_SUELDOS", label: "RESICO PF con Sueldos" },
   { value: "ARRENDAMIENTO", label: "Arrendamiento" },
   { value: "ARRENDAMIENTO_SUELDOS", label: "Arrendamiento con Sueldos" },
-  { value: "RESICO_PM", label: "RESICO Persona Moral" },
 ] as const;
 
 const TIPO_PERSONA = [
-  { value: "fisica", label: "Persona Fisica" },
+  { value: "fisica", label: "Persona Física" },
   { value: "moral", label: "Persona Moral" },
 ] as const;
 
@@ -64,7 +63,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
 
     const cleanRfc = rfc.toUpperCase().replace(/\s/g, "");
     if (!validateRfc(cleanRfc)) {
-      setError("El RFC no tiene un formato valido (12 o 13 caracteres).");
+      setError("El RFC no tiene un formato válido (12 o 13 caracteres).");
       return;
     }
 
@@ -74,7 +73,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
     }
 
     if (!regimen) {
-      setError("Selecciona tu regimen fiscal.");
+      setError("Selecciona tu régimen fiscal.");
       return;
     }
 
@@ -185,7 +184,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             <ClipboardList className="h-6 w-6 text-[var(--color-azul)]" />
           </div>
           <h2 className="mt-4 font-heading text-lg font-bold">
-            Comencemos por lo basico
+            Comencemos por lo básico
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Necesitamos algunos datos fiscales para configurar tu cuenta.
@@ -222,10 +221,10 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             <>
               <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
               <p className="mt-2 text-sm font-medium">
-                Sube tu Constancia de Situacion Fiscal
+                Sube tu Constancia de Situación Fiscal
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Arrastra tu PDF aqui o{" "}
+                Arrastra tu PDF aquí o{" "}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -235,7 +234,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 </button>
               </p>
               <p className="mt-1 text-xs text-muted-foreground italic">
-                Proximamente: llenado automatico desde el PDF
+                Próximamente: llenado automático desde el PDF
               </p>
               <input
                 ref={fileInputRef}
@@ -258,10 +257,10 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="q-nombre">Nombre completo o razon social</Label>
+            <Label htmlFor="q-nombre">Nombre completo o razón social</Label>
             <Input
               id="q-nombre"
-              placeholder="Juan Perez Lopez"
+              placeholder="Juan Pérez López"
               className="mt-1"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
@@ -303,7 +302,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
               </Select>
             </div>
             <div>
-              <Label>Regimen fiscal</Label>
+              <Label>Régimen fiscal</Label>
               <Select
                 value={regimen}
                 onValueChange={setRegimen}
@@ -346,7 +345,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
               className="gap-1.5 text-muted-foreground"
             >
               <Clock className="h-3.5 w-3.5" />
-              Dejar para despues
+              Dejar para después
             </Button>
             <Button type="submit" size="sm" className="gap-1.5" disabled={saving}>
               {saving ? (

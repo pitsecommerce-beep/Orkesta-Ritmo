@@ -20,6 +20,7 @@ Elementos que quedaron fuera de la iteración 1 o bloqueados por dependencias ex
 
 ## Parseo
 
+- [ ] **Parsing de Constancia de Situación Fiscal.** El módulo `constancia.py` tiene la estructura de extracción y el mapeo de claves SAT, pero `extraer_constancia()` necesita un PDF real del SAT para calibrar los patrones regex. Los PDFs del SAT varían entre años. Subir un documento real y ajustar los patrones.
 - [ ] **Descarga masiva vía PAC.** La abstracción `CfdiSource` existe con `PacSource` que levanta `NotImplementedError`. Se necesita contrato con un PAC autorizado.
 - [ ] **Adaptadores bancarios.** Solo Mercado Pago está implementado. Esqueletos de Santander, BBVA, Nu y Revolut creados.
 

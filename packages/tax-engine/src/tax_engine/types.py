@@ -96,7 +96,7 @@ class PerfilFiscal:
     """Perfil fiscal del contribuyente."""
     regimen: Regimen
     rfc: str
-    tipo_deduccion: str = "ciega"  # Solo "ciega" en iteracion 1
+    tipo_deduccion: str = "opcional"
     presenta_anual: bool = False
     opcion_trimestral: bool = False
 
@@ -124,7 +124,7 @@ class DesgloseISR:
     base_gravable: Decimal
     impuesto_determinado: Decimal
     retenciones_isr: Decimal
-    isr_a_pagar: Decimal
+    isr_a_cargo: Decimal
     trazabilidad: list[TrazabilidadCfdi] = field(default_factory=list)
 
 

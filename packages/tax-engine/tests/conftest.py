@@ -40,21 +40,21 @@ def perfil_resico_pf() -> PerfilFiscal:
 
 @pytest.fixture
 def perfil_arrendamiento() -> PerfilFiscal:
-    """Perfil fiscal Arrendamiento con deduccion ciega."""
+    """Perfil fiscal Arrendamiento con deducción opcional."""
     return PerfilFiscal(
         regimen=Regimen.ARRENDAMIENTO,
         rfc="XAXX010101000",
-        tipo_deduccion="ciega",
+        tipo_deduccion="opcional",
     )
 
 
 @pytest.fixture
 def perfil_arrendamiento_trimestral() -> PerfilFiscal:
-    """Perfil fiscal Arrendamiento trimestral con deduccion ciega."""
+    """Perfil fiscal Arrendamiento trimestral con deducción opcional."""
     return PerfilFiscal(
         regimen=Regimen.ARRENDAMIENTO,
         rfc="XAXX010101000",
-        tipo_deduccion="ciega",
+        tipo_deduccion="opcional",
         opcion_trimestral=True,
     )
 

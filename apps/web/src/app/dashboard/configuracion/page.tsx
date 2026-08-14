@@ -19,11 +19,10 @@ import { Shield, Users, Settings, Loader2, CheckCircle, AlertCircle } from "luci
 import { createClient } from "@/lib/supabase";
 
 const REGIMEN_LABELS: Record<string, string> = {
-  RESICO_PF: "RESICO Persona Fisica",
+  RESICO_PF: "RESICO Persona Física",
   RESICO_PF_SUELDOS: "RESICO PF + Sueldos",
   ARRENDAMIENTO: "Arrendamiento",
   ARRENDAMIENTO_SUELDOS: "Arrendamiento + Sueldos",
-  RESICO_PM: "RESICO Persona Moral",
 };
 
 interface TenantData {
@@ -107,7 +106,7 @@ export default function ConfiguracionPage() {
       .maybeSingle();
 
     if (!profile) {
-      setInviteMsg({ type: "error", text: "No se encontro un usuario con ese correo. Debe registrarse primero." });
+      setInviteMsg({ type: "error", text: "No se encontró un usuario con ese correo. Debe registrarse primero." });
       setInviting(false);
       return;
     }
@@ -153,7 +152,7 @@ export default function ConfiguracionPage() {
   return (
     <div className="p-6 lg:p-8">
       <div className="animate-fade-in-up">
-        <h1 className="font-heading text-2xl font-bold">Configuracion</h1>
+        <h1 className="font-heading text-2xl font-bold">Configuración</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Administra tu workspace y preferencias.
         </p>
@@ -174,7 +173,7 @@ export default function ConfiguracionPage() {
                   <Input value={tenant.rfc} disabled className="mt-1 font-mono" />
                 </div>
                 <div>
-                  <Label>Nombre / Razon social</Label>
+                  <Label>Nombre / Razón social</Label>
                   <Input
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
@@ -182,7 +181,7 @@ export default function ConfiguracionPage() {
                   />
                 </div>
                 <div>
-                  <Label>Regimen fiscal</Label>
+                  <Label>Régimen fiscal</Label>
                   <div className="mt-1">
                     <Badge>{REGIMEN_LABELS[tenant.regimen] ?? tenant.regimen}</Badge>
                   </div>
@@ -287,7 +286,7 @@ export default function ConfiguracionPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-sm">Boveda de e.firma</p>
+                <p className="font-medium text-sm">Bóveda de e.firma</p>
                 <p className="text-xs text-muted-foreground">
                   Almacena tu .cer y .key cifrados con AES-256-GCM
                 </p>
@@ -297,7 +296,7 @@ export default function ConfiguracionPage() {
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-sm">Cookies de analitica</p>
+                <p className="font-medium text-sm">Cookies de analítica</p>
                 <p className="text-xs text-muted-foreground">Desactivadas por defecto</p>
               </div>
               <Switch />
