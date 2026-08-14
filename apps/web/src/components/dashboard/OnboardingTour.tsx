@@ -57,8 +57,8 @@ const STEPS = [
 
 const DESKTOP_BREAKPOINT = 768;
 
-export function OnboardingTour() {
-  const [show, setShow] = useState(false);
+export function OnboardingTour({ onComplete: onCompleteCb }: { onComplete?: () => void } = {}) {
+  const [show, setShow] = useState(true);
   const [step, setStep] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
   const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
@@ -71,27 +71,6 @@ export function OnboardingTour() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    async function check() {
-      const supabase = createClient();
-      if (!supabase) return;
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("onboarding_completado")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profile && !profile.onboarding_completado) {
-        setShow(true);
-      }
-    }
-    check();
   }, []);
 
   const positionPopover = useCallback(() => {
@@ -161,6 +140,7 @@ export function OnboardingTour() {
       .eq("id", user.id);
 
     setShow(false);
+    onCompleteCb?.();
   }
 
   if (!show) return null;
