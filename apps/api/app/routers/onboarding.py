@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 from supabase import Client
 import re
+import tempfile
+from pathlib import Path
 
 from app.db import get_supabase, require_auth
 
@@ -87,11 +89,37 @@ async def upload_constancia(
     db: Client = Depends(get_supabase),
     user_id: str = Depends(require_auth),
 ):
+    from tax_engine.constancia import (
+        extraer_constancia_desde_pdf,
+        derivar_regimen_de_constancia,
+    )
+
+    content = await file.read()
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = Path(tmp.name)
+
+    try:
+        datos = extraer_constancia_desde_pdf(tmp_path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    if not datos.valido:
+        return {
+            "paso": 3,
+            "error": datos.error,
+            "siguiente": "upload_constancia",
+        }
+
+    regimen_detectado = derivar_regimen_de_constancia(datos) or ""
+
     return {
         "paso": 3,
-        "rfc": "XAXX010101000",
-        "regimen_detectado": "RESICO_PF",
-        "nombre_constancia": "Nombre Extraído",
+        "rfc": datos.rfc,
+        "regimen_detectado": regimen_detectado,
+        "nombre_constancia": datos.nombre,
+        "tipo_persona": datos.tipo_persona,
+        "domicilio_cp": datos.domicilio_cp,
         "siguiente": "confirmar_regimen",
     }
 
