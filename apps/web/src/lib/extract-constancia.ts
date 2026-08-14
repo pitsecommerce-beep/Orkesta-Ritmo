@@ -67,10 +67,10 @@ const REGIMENES_SOPORTADOS: Record<string, string> = {
 
 const RE_RFC = /RFC\s*:\s*([A-ZÑ&0-9]{12,13})/i;
 const RE_NOMBRE_COMPLETO =
-  /(?:Denominaci[oó]n|Raz[oó]n\s+Social)\s*(?:\([^)]*\))?\s*:\s*(.+)/i;
-const RE_NOMBRE_PARTES = /Nombre\s*\(?s?\)?\s*:\s*(.+)/i;
-const RE_PRIMER_APELLIDO = /Primer\s+Apellido\s*:\s*(.+)/i;
-const RE_SEGUNDO_APELLIDO = /Segundo\s+Apellido\s*:\s*(.+)/i;
+  /(?:Denominaci[oó]n|Raz[oó]n\s+Social)\s*(?:\([^)]*\))?[^\S\n]*:[^\S\n]*(.+)/i;
+const RE_NOMBRE_PARTES = /Nombre\s*\(?s?\)?\s*:[^\S\n]*(.+)/i;
+const RE_PRIMER_APELLIDO = /Primer\s+Apellido\s*:[^\S\n]*(.+)/i;
+const RE_SEGUNDO_APELLIDO = /Segundo\s+Apellido\s*:[^\S\n]*(.+)/i;
 const RE_CP = /C[oó]digo\s+Postal\s*:\s*(\d{5})/i;
 
 // --- Detección de regímenes en el texto ---
