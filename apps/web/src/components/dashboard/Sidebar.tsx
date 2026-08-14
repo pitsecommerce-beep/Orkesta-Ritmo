@@ -94,21 +94,21 @@ export function Sidebar() {
           className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
         >
           <Settings className="h-4 w-4" />
-          Configuracion
+          Configuración
         </Link>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all">
               <LogOut className="h-4 w-4" />
-              Cerrar sesion
+              Cerrar sesión
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Cerrar sesion</AlertDialogTitle>
+              <AlertDialogTitle>Cerrar sesión</AlertDialogTitle>
               <AlertDialogDescription>
-                Estas seguro de que quieres cerrar tu sesion?
+                ¿Estás seguro de que quieres cerrar tu sesión?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -122,7 +122,7 @@ export function Sidebar() {
                   }
                 }}
               >
-                Cerrar sesion
+                Cerrar sesión
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

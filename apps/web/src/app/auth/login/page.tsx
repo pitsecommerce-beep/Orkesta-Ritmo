@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     if (mode === "magic-link") {
       if (!email) {
-        setError("Ingresa tu correo electronico.");
+        setError("Ingresa tu correo electrónico.");
         return;
       }
       setLoading(true);
@@ -60,12 +60,12 @@ export default function LoginPage() {
     }
 
     if (mode === "signup" && password !== confirmPassword) {
-      setError("Las contrasenas no coinciden.");
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
     if (password.length < 6) {
-      setError("La contrasena debe tener al menos 6 caracteres.");
+      setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
@@ -90,10 +90,10 @@ export default function LoginPage() {
       setLoading(false);
       if (authError) {
         if (authError.message === "Invalid login credentials") {
-          setError("Correo o contrasena incorrectos.");
+          setError("Correo o contraseña incorrectos.");
         } else if (authError.message === "Email not confirmed") {
           setError(
-            "Tu correo no ha sido confirmado. Usa el enlace magico para iniciar sesion y confirmar tu cuenta automaticamente."
+            "Tu correo no ha sido confirmado. Usa el enlace mágico para iniciar sesion y confirmar tu cuenta automáticamente."
           );
         } else {
           setError(authError.message);
@@ -120,10 +120,10 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <CardTitle className="font-heading text-xl">
             {mode === "login"
-              ? "Iniciar sesion"
+              ? "Iniciar sesión"
               : mode === "signup"
                 ? "Crear cuenta"
-                : "Enlace magico"}
+                : "Enlace mágico"}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -131,7 +131,7 @@ export default function LoginPage() {
             <div className="text-center">
               <CloudOff className="mx-auto h-10 w-10 text-muted-foreground" />
               <p className="mt-4 text-sm text-muted-foreground">
-                Login disponible en produccion.
+                Login disponible en producción.
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Las variables de entorno de Supabase se configuran en Railway.
@@ -141,7 +141,7 @@ export default function LoginPage() {
             <div className="text-center py-4">
               <CheckCircle className="mx-auto h-10 w-10 text-green-500" />
               <p className="mt-4 text-sm font-medium">
-                Revisa tu correo electronico
+                Revisa tu correo electrónico
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 Enviamos un enlace de acceso a <strong>{email}</strong>. Haz
@@ -172,7 +172,7 @@ export default function LoginPage() {
                     }`}
                   >
                     <KeyRound className="h-3.5 w-3.5" />
-                    Contrasena
+                    Contraseña
                   </button>
                   <button
                     type="button"
@@ -184,13 +184,13 @@ export default function LoginPage() {
                     }`}
                   >
                     <Mail className="h-3.5 w-3.5" />
-                    Enlace magico
+                    Enlace mágico
                   </button>
                 </div>
               )}
 
               <div>
-                <Label htmlFor="email">Correo electronico</Label>
+                <Label htmlFor="email">Correo electrónico</Label>
                 <Input
                   id="email"
                   type="email"
@@ -205,7 +205,7 @@ export default function LoginPage() {
 
               {mode !== "magic-link" && (
                 <div>
-                  <Label htmlFor="password">Contrasena</Label>
+                  <Label htmlFor="password">Contraseña</Label>
                   <div className="relative mt-1">
                     <Input
                       id="password"
@@ -236,7 +236,7 @@ export default function LoginPage() {
 
               {mode === "signup" && (
                 <div>
-                  <Label htmlFor="confirmPassword">Confirmar contrasena</Label>
+                  <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
                   <div className="relative mt-1">
                     <Input
                       id="confirmPassword"
@@ -270,7 +270,7 @@ export default function LoginPage() {
               {mode === "magic-link" && (
                 <p className="text-xs text-muted-foreground">
                   Te enviaremos un enlace de acceso a tu correo. No necesitas
-                  contrasena.
+                  contraseña.
                 </p>
               )}
 
@@ -291,7 +291,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     {mode === "login"
-                      ? "Iniciar sesion"
+                      ? "Iniciar sesión"
                       : mode === "signup"
                         ? "Crear cuenta"
                         : "Enviar enlace"}
@@ -313,7 +313,7 @@ export default function LoginPage() {
                       onClick={() => switchMode("login")}
                       className="text-[var(--color-azul)] underline"
                     >
-                      Inicia sesion
+                      Inicia sesión
                     </button>
                   </>
                 ) : (
@@ -324,7 +324,7 @@ export default function LoginPage() {
                       onClick={() => switchMode("signup")}
                       className="text-[var(--color-azul)] underline"
                     >
-                      Registrate
+                      Regístrate
                     </button>
                   </>
                 )}
@@ -337,7 +337,7 @@ export default function LoginPage() {
       <p className="mt-8 text-center text-xs text-muted-foreground">
         Al continuar, aceptas nuestros{" "}
         <Link href="/terminos" className="underline">
-          Terminos
+          Términos
         </Link>{" "}
         y{" "}
         <Link href="/privacidad" className="underline">
