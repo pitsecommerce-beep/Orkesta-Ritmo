@@ -16,10 +16,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const REGIMES = [
   { name: "RESICO Persona Física", desc: "Régimen Simplificado de Confianza para personas físicas con ingresos hasta 3.5 MDP anuales." },
-  { name: "RESICO PF + Sueldos", desc: "RESICO combinado con ingresos por sueldos y salarios (nómina)." },
-  { name: "Arrendamiento", desc: "Ingresos por renta de inmuebles con deducción ciega del 35% o deducciones comprobables." },
+  { name: "RESICO PF + Sueldos", desc: "RESICO combinado con ingresos por sueldos y salarios. Los sueldos no tributan en RESICO; se acumulan por separado." },
+  { name: "Arrendamiento", desc: "Ingresos por renta de inmuebles con deducción opcional del 35% o deducciones comprobables." },
   { name: "Arrendamiento + Sueldos", desc: "Arrendamiento combinado con ingresos por sueldos y salarios." },
-  { name: "RESICO Persona Moral", desc: "Régimen Simplificado de Confianza para personas morales con ingresos hasta 35 MDP." },
 ];
 
 const STEPS = [
@@ -32,7 +31,7 @@ const STEPS = [
 const FAQ = [
   { q: "¿Ritmo presenta mi declaración?", a: "No. Ritmo prepara los cálculos y te muestra el desglose. Tú presentas directamente en el portal del SAT." },
   { q: "¿Conectan con el SAT?", a: "No. Nunca nos conectamos al SAT ni generamos línea de captura. Tu e.firma nunca sale de tu dispositivo." },
-  { q: "¿Qué regímenes soportan?", a: "RESICO PF, RESICO PF + Sueldos, Arrendamiento, Arrendamiento + Sueldos y RESICO PM. Si tienes otro régimen, puedes registrarte en la lista de espera." },
+  { q: "¿Qué regímenes soportan?", a: "RESICO PF, RESICO PF + Sueldos, Arrendamiento y Arrendamiento + Sueldos. Si tienes otro régimen, puedes registrarte en la lista de espera." },
   { q: "¿Mis datos están seguros?", a: "Sí. Cifrado AES-256-GCM, aislamiento por tenant, y nunca enviamos tu RFC o CURP real a proveedores de IA." },
   { q: "¿Es gratis?", a: "Ritmo tiene un plan gratuito con funcionalidad limitada. Los planes de pago desbloquean más períodos y funciones avanzadas." },
 ];

@@ -29,7 +29,6 @@ const REGIMENES = [
   { value: "RESICO_PF_SUELDOS", label: "RESICO PF con Sueldos" },
   { value: "ARRENDAMIENTO", label: "Arrendamiento" },
   { value: "ARRENDAMIENTO_SUELDOS", label: "Arrendamiento con Sueldos" },
-  { value: "RESICO_PM", label: "RESICO Persona Moral" },
 ] as const;
 
 const TIPO_PERSONA = [
@@ -225,7 +224,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 Sube tu Constancia de Situación Fiscal
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Arrastra tu PDF aqui o{" "}
+                Arrastra tu PDF aquí o{" "}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -261,7 +260,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             <Label htmlFor="q-nombre">Nombre completo o razón social</Label>
             <Input
               id="q-nombre"
-              placeholder="Juan Perez Lopez"
+              placeholder="Juan Pérez López"
               className="mt-1"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}

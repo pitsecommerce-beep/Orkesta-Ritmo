@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   FlaskConical,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
@@ -88,6 +89,14 @@ export function Sidebar() {
             aria-label="Modo demo"
           />
         </div>
+
+        <Link
+          href="/dashboard/cuenta"
+          className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-[var(--color-primary-light)] hover:text-foreground transition-all"
+        >
+          <User className="h-4 w-4" />
+          Mi cuenta
+        </Link>
 
         <Link
           href="/dashboard/configuracion"

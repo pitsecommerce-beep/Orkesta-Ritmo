@@ -17,11 +17,10 @@ import { useDemoMode } from "@/hooks/use-demo-mode";
 import { useTenant } from "@/hooks/use-tenant";
 
 const REGIMEN_LABELS: Record<string, string> = {
-  RESICO_PF: "RESICO Persona Fisica",
+  RESICO_PF: "RESICO Persona Física",
   RESICO_PF_SUELDOS: "RESICO PF + Sueldos",
   ARRENDAMIENTO: "Arrendamiento",
   ARRENDAMIENTO_SUELDOS: "Arrendamiento + Sueldos",
-  RESICO_PM: "RESICO Persona Moral",
 };
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -32,7 +31,7 @@ const ESTADO_LABELS: Record<string, string> = {
   presentado: "Presentado",
   cerrado: "Cerrado",
   con_diferencia: "Con diferencia",
-  requiere_revision: "Requiere revision",
+  requiere_revision: "Requiere revisión",
   omitido: "Omitido",
 };
 
@@ -65,11 +64,11 @@ interface PeriodoRow {
 }
 
 const MOCK_PERIODOS: PeriodoRow[] = [
-  { id: "m1", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { isr_pago: 1250 } },
+  { id: "m1", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { isr_a_cargo: 1250 } },
   { id: "m2", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 1, fecha_limite: "2025-02-17", estado: "presentado", resultado_json: { iva_determinado: 1856 } },
-  { id: "m3", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "presentado", resultado_json: { isr_pago: 2100 } },
+  { id: "m3", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "presentado", resultado_json: { isr_a_cargo: 2100 } },
   { id: "m4", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 2, fecha_limite: "2025-03-17", estado: "presentado", resultado_json: { iva_determinado: 2320 } },
-  { id: "m5", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 3, fecha_limite: "2025-04-17", estado: "calculado", resultado_json: { isr_pago: 1800 } },
+  { id: "m5", impuesto: "ISR", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 3, fecha_limite: "2025-04-17", estado: "calculado", resultado_json: { isr_a_cargo: 1800 } },
   { id: "m6", impuesto: "IVA", tipo_periodo: "mensual", ejercicio: 2025, numero_periodo: 3, fecha_limite: "2025-04-17", estado: "borrador", resultado_json: null },
 ];
 
@@ -112,7 +111,7 @@ export default function DashboardHome() {
 
   const isrTotal = periodos
     .filter(p => p.impuesto === "ISR" && p.resultado_json)
-    .reduce((sum, p) => sum + (Number((p.resultado_json as Record<string, unknown>)?.isr_pago) || 0), 0);
+    .reduce((sum, p) => sum + (Number((p.resultado_json as Record<string, unknown>)?.isr_a_cargo) || 0), 0);
 
   const ivaTotal = periodos
     .filter(p => p.impuesto === "IVA" && p.resultado_json)
@@ -122,7 +121,7 @@ export default function DashboardHome() {
   const progreso = totalObligaciones > 0 ? Math.round((presentados.length / totalObligaciones) * 100) : 0;
 
   const regimenLabel = demoMode
-    ? "RESICO Persona Fisica"
+    ? "RESICO Persona Física"
     : tenant ? (REGIMEN_LABELS[tenant.regimen] ?? tenant.regimen) : "";
 
   const ejercicio = periodos.length > 0 ? periodos[0].ejercicio : new Date().getFullYear();
@@ -162,7 +161,7 @@ export default function DashboardHome() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold font-mono">{formatMXN(isrTotal)}</p>
-            <p className="text-xs text-muted-foreground">Pagos definitivos</p>
+            <p className="text-xs text-muted-foreground">ISR a cargo acumulado</p>
           </CardContent>
         </Card>
         <Card className="animate-fade-in-up stagger-3 card-hover shadow-[var(--shadow-warm-sm)]">
@@ -189,7 +188,7 @@ export default function DashboardHome() {
 
       <Card className="mt-8 animate-fade-in-up stagger-5 shadow-[var(--shadow-warm-sm)]">
         <CardHeader>
-          <CardTitle className="font-heading text-lg">Obligaciones del periodo</CardTitle>
+          <CardTitle className="font-heading text-lg">Obligaciones del período</CardTitle>
         </CardHeader>
         <CardContent>
           {periodos.length > 0 ? (
@@ -204,7 +203,7 @@ export default function DashboardHome() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground">
-                      Limite: {p.fecha_limite}
+                      Límite: {p.fecha_limite}
                     </span>
                     <Badge className={ESTADO_COLORS[p.estado] ?? ""}>
                       {ESTADO_LABELS[p.estado] ?? p.estado}

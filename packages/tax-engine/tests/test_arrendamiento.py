@@ -2,7 +2,7 @@
 Tests para calculo de ISR de Arrendamiento.
 
 Cada test tiene el resultado esperado calculado a mano.
-Arrendamiento usa deduccion ciega (35%) y tarifa Art. 96.
+Arrendamiento usa deducción opcional (35%) y tarifa Art. 96.
 """
 
 from decimal import Decimal
@@ -21,9 +21,9 @@ class TestArrendamientoISR:
 
     def test_01_single_month_first_bracket(self, ejercicio_2025):
         """
-        Un mes, ingreso en primer tramo, deduccion ciega.
+        Un mes, ingreso en primer tramo, deducción opcional.
         Ingreso: $1,000
-        Deduccion ciega: 1000 * 35% = $350
+        Deducción opcional: 1000 * 35% = $350
         Base gravable: 1000 - 350 = $650
         Tramo 1: lim_inf=0.01, lim_sup=844.59, cuota=0, %=1.92
         ISR = (650 - 0.01) * 1.92% + 0 = 649.99 * 0.0192 = $12.479808
@@ -40,13 +40,13 @@ class TestArrendamientoISR:
         # (650 - 0.01) * 1.92 / 100 + 0 = 649.99 * 0.0192 = 12.479808
         expected_isr = (Decimal("650") - Decimal("0.01")) * Decimal("1.92") / Decimal("100") + Decimal("0")
         assert isr.impuesto_determinado == expected_isr
-        assert isr.isr_a_pagar == expected_isr
+        assert isr.isr_a_cargo == expected_isr
 
     def test_02_middle_bracket(self, ejercicio_2025):
         """
         Ingreso en tramo medio.
         Ingreso: $30,000
-        Deduccion ciega: 30000 * 35% = $10,500
+        Deducción opcional: 30000 * 35% = $10,500
         Base gravable: 30000 - 10500 = $19,500
         Tramo 6: lim_inf=17533.65, lim_sup=35362.83, cuota=1856.84, %=21.36
         ISR = (19500 - 17533.65) * 21.36% + 1856.84
@@ -71,7 +71,7 @@ class TestArrendamientoISR:
         """
         Ingreso en tramo superior (sin limite superior).
         Ingreso: $700,000
-        Deduccion ciega: 700000 * 35% = $245,000
+        Deducción opcional: 700000 * 35% = $245,000
         Base gravable: 700000 - 245000 = $455,000
         Tramo 11: lim_inf=425642.00, cuota=133488.54, %=35.00
         ISR = (455000 - 425642) * 35% + 133488.54
@@ -96,7 +96,7 @@ class TestArrendamientoISR:
         """
         Con retencion ISR del 10% (factura a persona moral).
         Ingreso: $20,000
-        Deduccion ciega: 20000 * 35% = $7,000
+        Deducción opcional: 20000 * 35% = $7,000
         Base gravable: 20000 - 7000 = $13,000
         Tramo 4: lim_inf=12598.03, lim_sup=14644.64, cuota=1011.68, %=16.00
         ISR = (13000 - 12598.03) * 16% + 1011.68
@@ -123,14 +123,14 @@ class TestArrendamientoISR:
         imp_det = excedente * Decimal("16") / Decimal("100") + Decimal("1011.68")
         assert isr.impuesto_determinado == imp_det
         assert isr.retenciones_isr == Decimal("2000")
-        assert isr.isr_a_pagar == imp_det - Decimal("2000")
-        assert isr.isr_a_pagar < Decimal("0")
+        assert isr.isr_a_cargo == imp_det - Decimal("2000")
+        assert isr.isr_a_cargo < Decimal("0")
 
     def test_05_with_iva_withholding(self, ejercicio_2025):
         """
         Con retencion IVA de 2/3 (no afecta ISR, solo verificar que se lee).
         Ingreso: $20,000
-        Deduccion ciega: $7,000
+        Deducción opcional: $7,000
         Base gravable: $13,000
         ISR calculado normalmente, retencion IVA no afecta ISR.
         """
@@ -156,7 +156,7 @@ class TestArrendamientoISR:
         """
         Opcion trimestral: tarifa triplicada.
         Ingreso trimestral: $60,000
-        Deduccion ciega: 60000 * 35% = $21,000
+        Deducción opcional: 60000 * 35% = $21,000
         Base gravable: 60000 - 21000 = $39,000
 
         Tarifa triplicada tramo 6:
@@ -229,7 +229,7 @@ class TestArrendamientoISR:
 
     def test_09_blind_deduction_verification(self, ejercicio_2025):
         """
-        Verificar calculo exacto de deduccion ciega al 35%.
+        Verificar calculo exacto de deducción opcional al 35%.
         Ingreso: $45,678.90
         Deduccion: 45678.90 * 0.35 = $15,987.615
         Base: 45678.90 - 15987.615 = $29,691.285
@@ -248,7 +248,7 @@ class TestArrendamientoISR:
         """
         Multiples CFDIs en un solo periodo mensual.
         Ingresos: $8,000 + $12,000 + $5,000 = $25,000
-        Deduccion ciega: 25000 * 35% = $8,750
+        Deducción opcional: 25000 * 35% = $8,750
         Base gravable: 25000 - 8750 = $16,250
         Tramo 5: lim_inf=14644.65, lim_sup=17533.64, cuota=1339.14, %=17.92
         ISR = (16250 - 14644.65) * 17.92% + 1339.14
@@ -275,7 +275,7 @@ class TestArrendamientoISR:
         """
         Ingreso que resulta en base gravable en segundo tramo.
         Ingreso: $5,000
-        Deduccion ciega: 5000 * 35% = $1,750
+        Deducción opcional: 5000 * 35% = $1,750
         Base gravable: 5000 - 1750 = $3,250
         Tramo 2: lim_inf=844.60, lim_sup=7168.51, cuota=16.22, %=6.40
         ISR = (3250 - 844.60) * 6.40% + 16.22

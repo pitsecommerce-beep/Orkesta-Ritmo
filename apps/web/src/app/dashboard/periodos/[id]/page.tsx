@@ -34,7 +34,7 @@ const ESTADO_LABELS: Record<string, string> = {
   presentado: "Presentado",
   cerrado: "Cerrado",
   con_diferencia: "Con diferencia",
-  requiere_revision: "Requiere revision",
+  requiere_revision: "Requiere revisión",
   omitido: "Omitido",
 };
 
@@ -92,7 +92,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         fecha_limite: "2025-02-17",
         estado: "presentado",
         resultado_json: {
-          isr_pago: 1250,
+          isr_a_cargo: 1250,
           ingresos_gravados: 35000,
           tasa_aplicada: 0.0125,
           ingresos_periodo: 35000,
@@ -146,7 +146,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
     : `Periodo ${id}`;
 
   const subtitle = periodo
-    ? `${periodo.tipo_periodo} — Limite: ${periodo.fecha_limite}`
+    ? `${periodo.tipo_periodo} — Límite: ${periodo.fecha_limite}`
     : "Sin datos";
 
   const canRecalculate = periodo && !["presentado", "cerrado"].includes(periodo.estado);
@@ -186,7 +186,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
         <TabsList>
           <TabsTrigger value="desglose">Desglose fiscal</TabsTrigger>
           <TabsTrigger value="cfdis">CFDIs ({cfdis.length})</TabsTrigger>
-          <TabsTrigger value="conciliacion">Conciliacion</TabsTrigger>
+          <TabsTrigger value="conciliacion">Conciliación</TabsTrigger>
         </TabsList>
 
         <TabsContent value="desglose" className="mt-6 animate-fade-in">
@@ -195,7 +195,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
               <CardHeader>
                 <CardTitle className="font-heading text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-[var(--color-azul)]" />
-                  {periodo?.impuesto === "IVA" ? "IVA — Determinacion mensual" : "ISR — Pago definitivo"}
+                  {periodo?.impuesto === "IVA" ? "IVA — Determinación mensual" : "ISR — Desglose del periodo"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -239,7 +239,7 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
                         <TableHead className="text-right">Subtotal</TableHead>
                         <TableHead className="text-right">Total</TableHead>
                         <TableHead>Tipo</TableHead>
-                        <TableHead>Metodo</TableHead>
+                        <TableHead>Método</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -313,7 +313,7 @@ function EmptyDesglose() {
     <div className="flex flex-col items-center justify-center py-8 text-center">
       <FolderOpen className="h-8 w-8 text-muted-foreground/40" />
       <p className="mt-3 text-sm text-muted-foreground">
-        Sin calculo disponible
+        Sin cálculo disponible
       </p>
       <p className="mt-1 text-xs text-muted-foreground/70">
         Sube CFDIs para generar el desglose fiscal.

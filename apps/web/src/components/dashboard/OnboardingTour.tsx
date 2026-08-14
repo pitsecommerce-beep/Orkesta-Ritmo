@@ -20,7 +20,7 @@ const STEPS = [
   {
     icon: Sparkles,
     title: "Bienvenido a Ritmo",
-    body: "Tu herramienta para preparar y calcular tus declaraciónes fiscales RESICO de forma sencilla. Te explicamos como funciona en 5 pasos rápidos.",
+    body: "Tu herramienta para preparar y calcular tus declaraciones fiscales de forma sencilla. Te explicamos cómo funciona en 5 pasos rápidos.",
     target: null,
   },
   {
@@ -32,13 +32,13 @@ const STEPS = [
   {
     icon: Calendar,
     title: "2. Revisa tus periodos",
-    body: "En Periodos verás tus obligaciones fiscales mensuales organizadas por ISR e IVA. Cada periodo muestra su estado y fecha limite.",
+    body: "En Periodos verás tus obligaciones fiscales mensuales organizadas por ISR e IVA. Cada periodo muestra su estado y fecha límite.",
     target: "/dashboard/periodos",
   },
   {
     icon: Calculator,
     title: "3. Calcula tu declaración",
-    body: "Cuando tus documentos estén procesados, ejecuta el calculo fiscal. El motor de Ritmo aplica las tarifas RESICO vigentes y genera el desglose completo.",
+    body: "Cuando tus documentos estén procesados, ejecuta el cálculo fiscal. El motor de Ritmo aplica las tarifas vigentes de tu régimen y genera el desglose completo.",
     target: "/dashboard/periodos",
   },
   {
@@ -50,7 +50,7 @@ const STEPS = [
   {
     icon: MessageSquare,
     title: "5. Asistente fiscal",
-    body: "Si tienes dudas, el Asistente esta disponible en el panel lateral para responder preguntas sobre tu situación fiscal.",
+    body: "Si tienes dudas, el Asistente está disponible en el panel lateral para responder preguntas sobre tu situación fiscal.",
     target: "/dashboard/chat",
   },
 ];

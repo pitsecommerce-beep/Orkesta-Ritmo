@@ -70,7 +70,7 @@ class TestEjercicio2025SigueFuncionando:
         resultado = calcular([cfdi], perfil, ejercicio_year=2025, periodo=1)
 
         assert resultado.isr.ingresos == Decimal("20000")
-        assert resultado.isr.isr_a_pagar > Decimal("0")
+        assert resultado.isr.isr_a_cargo > Decimal("0")
 
     def test_arrendamiento_2025_calcula(self):
         cfdi = make_cfdi_pue(uuid="test-ok-02", subtotal=Decimal("30000"))
@@ -78,4 +78,4 @@ class TestEjercicio2025SigueFuncionando:
         resultado = calcular([cfdi], perfil, ejercicio_year=2025, periodo=1)
 
         assert resultado.isr.ingresos == Decimal("30000")
-        assert resultado.isr.isr_a_pagar >= Decimal("0")
+        assert resultado.isr.isr_a_cargo >= Decimal("0")

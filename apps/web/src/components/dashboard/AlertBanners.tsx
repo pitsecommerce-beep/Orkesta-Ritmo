@@ -74,14 +74,14 @@ export function EmailVerificationBanner() {
       <Mail className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-warning)]" />
       <div className="flex-1">
         <p className="font-medium text-amber-900 dark:text-amber-200">
-          Verifica tu correo electronico
+          Verifica tu correo electrónico
         </p>
         <p className="mt-1 text-amber-800/80 dark:text-amber-300/80">
           Para calcular y presentar tus declaraciones necesitas verificar tu correo.
         </p>
         {sent ? (
           <p className="mt-2 text-sm font-medium text-green-700 dark:text-green-400">
-            Revisa tu bandeja de entrada y haz clic en el enlace de verificacion.
+            Revisa tu bandeja de entrada y haz clic en el enlace de verificación.
           </p>
         ) : (
           <Button
@@ -94,7 +94,7 @@ export function EmailVerificationBanner() {
             {sending ? (
               <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> Enviando...</>
             ) : (
-              "Enviar correo de verificacion"
+              "Enviar correo de verificación"
             )}
           </Button>
         )}

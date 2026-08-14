@@ -47,7 +47,7 @@ class TestResicoPfISR:
         assert isr.base_gravable == Decimal("20000")
         assert isr.impuesto_determinado == Decimal("200")
         assert isr.retenciones_isr == Decimal("0")
-        assert isr.isr_a_pagar == Decimal("200")
+        assert isr.isr_a_cargo == Decimal("200")
         assert len(alertas) == 0
 
     def test_02_single_pue_second_bracket(self, ejercicio_2025):
@@ -67,7 +67,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("40000")
         assert isr.impuesto_determinado == Decimal("440")
-        assert isr.isr_a_pagar == Decimal("440")
+        assert isr.isr_a_cargo == Decimal("440")
         assert len(alertas) == 0
 
     def test_03_multiple_pue_third_bracket(self, ejercicio_2025):
@@ -85,7 +85,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("55000")
         assert isr.impuesto_determinado == Decimal("825")
-        assert isr.isr_a_pagar == Decimal("825")
+        assert isr.isr_a_cargo == Decimal("825")
         assert len(alertas) == 0
 
     def test_04_pue_with_isr_withholding(self, ejercicio_2025):
@@ -109,7 +109,7 @@ class TestResicoPfISR:
         assert isr.ingresos == Decimal("20000")
         assert isr.impuesto_determinado == Decimal("200")
         assert isr.retenciones_isr == Decimal("250")
-        assert isr.isr_a_pagar == Decimal("-50")
+        assert isr.isr_a_cargo == Decimal("-50")
         # Should have alert about saldo a favor
         assert any("saldo a favor" in a.lower() or "Saldo a favor" in a for a in alertas)
 
@@ -126,7 +126,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("0")
         assert isr.impuesto_determinado == Decimal("0")
-        assert isr.isr_a_pagar == Decimal("0")
+        assert isr.isr_a_cargo == Decimal("0")
 
     def test_06_cancelled_cfdi_excluded(self, ejercicio_2025):
         """
@@ -144,7 +144,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("0")
         assert isr.impuesto_determinado == Decimal("0")
-        assert isr.isr_a_pagar == Decimal("0")
+        assert isr.isr_a_cargo == Decimal("0")
 
     def test_07_payment_complement_objeto_imp_02(self, ejercicio_2025):
         """
@@ -169,7 +169,7 @@ class TestResicoPfISR:
         # 11600 / 1.16 = 10000
         assert isr.ingresos == Decimal("10000")
         assert isr.impuesto_determinado == Decimal("100")
-        assert isr.isr_a_pagar == Decimal("100")
+        assert isr.isr_a_cargo == Decimal("100")
 
     def test_08_payment_complement_objeto_imp_01(self, ejercicio_2025):
         """
@@ -191,7 +191,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("10000")
         assert isr.impuesto_determinado == Decimal("100")
-        assert isr.isr_a_pagar == Decimal("100")
+        assert isr.isr_a_cargo == Decimal("100")
 
     def test_09_mixed_pue_and_pago(self, ejercicio_2025):
         """
@@ -216,7 +216,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("25000")
         assert isr.impuesto_determinado == Decimal("250")
-        assert isr.isr_a_pagar == Decimal("250")
+        assert isr.isr_a_cargo == Decimal("250")
 
     def test_10_exact_bracket_boundary(self, ejercicio_2025):
         """
@@ -232,7 +232,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("25000")
         assert isr.impuesto_determinado == Decimal("250")
-        assert isr.isr_a_pagar == Decimal("250")
+        assert isr.isr_a_cargo == Decimal("250")
         assert len(alertas) == 0
 
     def test_11_income_exceeds_all_brackets(self, ejercicio_2025):
@@ -267,7 +267,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("150000")
         assert isr.impuesto_determinado == Decimal("3000")
-        assert isr.isr_a_pagar == Decimal("3000")
+        assert isr.isr_a_cargo == Decimal("3000")
 
     def test_13_fifth_bracket(self, ejercicio_2025):
         """
@@ -283,7 +283,7 @@ class TestResicoPfISR:
 
         assert isr.ingresos == Decimal("250000")
         assert isr.impuesto_determinado == Decimal("6250")
-        assert isr.isr_a_pagar == Decimal("6250")
+        assert isr.isr_a_cargo == Decimal("6250")
 
     def test_14_traceability(self, ejercicio_2025):
         """

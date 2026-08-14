@@ -65,3 +65,17 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 18. **Enmascaramiento de datos PII como middleware obligatorio** en el cliente de IA. Implementado como decorador que intercepta toda llamada saliente.
 
 19. **Bóveda e.firma completa pero detrás de feature flag** `FEATURE_EFIRMA=false`. La estructura de cifrado existe, la interfaz de carga no se muestra.
+
+## Corrección 1.2 — Bloque 5
+
+27. **`tipo_deduccion` default en `PerfilFiscal`**: Cambiado de `"ciega"` a `"opcional"`. El valor `"ciega"` no existe en la ley; el término correcto es "deducción opcional del 35%" (Art. 115 LISR).
+
+28. **`isr_a_pagar` → `isr_a_cargo`**: Renombrado en `DesgloseISR`, motores (resico_pf, resico_pm, arrendamiento), y todos los tests. "ISR a cargo" es el término del SAT para el impuesto resultante después de restar retenciones.
+
+29. **RESICO PM eliminado de todos los selectores de UI** (landing, onboarding, configuración, cuenta, IntroQuestionnaire): Aunque la desactivación formal del motor es Bloque 1, los selectores de régimen no deben ofrecer esta opción al usuario.
+
+30. **"Obtener línea de captura" → "Presenta en el SAT"** en documentos/page.tsx: Ritmo no genera líneas de captura; solo prepara la declaración.
+
+31. **"ISR — Pago definitivo" → "ISR — Desglose del periodo"** en detalle de periodo: El texto anterior asumía RESICO (pago definitivo). Para arrendamiento son pagos provisionales. El título neutro aplica a ambos regímenes.
+
+32. **Fixtures de test actualizados**: `perfil_arrendamiento` y `perfil_arrendamiento_trimestral` en conftest.py usan `tipo_deduccion="opcional"` en lugar de `"ciega"`, consistente con el nuevo default.

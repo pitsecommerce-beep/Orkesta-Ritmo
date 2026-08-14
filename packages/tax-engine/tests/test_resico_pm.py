@@ -34,7 +34,7 @@ class TestResicoPmISR:
 
         assert isr.ingresos == Decimal("20000")
         assert isr.impuesto_determinado == Decimal("200")
-        assert isr.isr_a_pagar == Decimal("200")
+        assert isr.isr_a_cargo == Decimal("200")
 
     def test_02_second_bracket(self, ejercicio_2025):
         """
@@ -68,7 +68,7 @@ class TestResicoPmISR:
             clasificados, ejercicio_2025.tarifas_resico
         )
 
-        assert isr.isr_a_pagar == Decimal("150")
+        assert isr.isr_a_cargo == Decimal("150")
 
     def test_04_no_deductions(self, ejercicio_2025):
         """
