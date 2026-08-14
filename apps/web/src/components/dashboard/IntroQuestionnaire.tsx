@@ -44,12 +44,63 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [constanciaFile, setConstanciaFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractionDone, setExtractionDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function validateRfc(value: string): boolean {
     const clean = value.toUpperCase().replace(/\s/g, "");
     return (clean.length === 12 || clean.length === 13) && /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/.test(clean);
+  }
+
+  async function extractFromPdf(file: File) {
+    setExtracting(true);
+    setExtractionDone(false);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/extract-constancia", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        return;
+      }
+
+      const datos = await res.json();
+
+      if (!datos.valido) {
+        return;
+      }
+
+      if (datos.rfc && !rfc) {
+        setRfc(datos.rfc);
+      }
+      if (datos.nombre && !nombre) {
+        setNombre(datos.nombre);
+      }
+      if (datos.tipoPersona && !tipoPersona) {
+        setTipoPersona(datos.tipoPersona);
+      }
+      if (datos.regimen && !regimen) {
+        setRegimen(datos.regimen);
+      }
+      setExtractionDone(true);
+    } catch {
+      // Silently fail — user can still fill manually
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  async function handleFileAccepted(file: File) {
+    setConstanciaFile(file);
+    await extractFromPdf(file);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -155,15 +206,20 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && file.type === "application/pdf") {
-      setConstanciaFile(file);
+      handleFileAccepted(file);
     }
   }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      setConstanciaFile(file);
+      handleFileAccepted(file);
     }
+  }
+
+  function handleRemoveFile() {
+    setConstanciaFile(null);
+    setExtractionDone(false);
   }
 
   return (
@@ -187,31 +243,39 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             Comencemos por lo básico
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Necesitamos algunos datos fiscales para configurar tu cuenta.
+            Sube tu constancia para llenar los datos automáticamente, o complétalos manualmente.
           </p>
         </div>
 
         <div
           className={`rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
             constanciaFile
-              ? "border-green-300 bg-green-50"
+              ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
               : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
           }`}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleFileDrop}
         >
-          {constanciaFile ? (
+          {extracting ? (
+            <div className="flex items-center justify-center gap-3 py-1">
+              <Loader2 className="h-5 w-5 animate-spin text-[var(--color-azul)]" />
+              <p className="text-sm font-medium text-[var(--color-azul)]">
+                Extrayendo datos de la constancia...
+              </p>
+            </div>
+          ) : constanciaFile ? (
             <div className="flex items-center justify-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               <div className="text-left">
                 <p className="text-sm font-medium">{constanciaFile.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {(constanciaFile.size / 1024).toFixed(0)} KB
+                  {extractionDone && " — datos extraídos"}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setConstanciaFile(null)}
+                onClick={handleRemoveFile}
                 className="ml-2 p-1 rounded hover:bg-muted"
               >
                 <X className="h-4 w-4 text-muted-foreground" />
@@ -234,7 +298,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 </button>
               </p>
               <p className="mt-1 text-xs text-muted-foreground italic">
-                Próximamente: llenado automático desde el PDF
+                Se leerán RFC, nombre y régimen del PDF
               </p>
               <input
                 ref={fileInputRef}
@@ -250,7 +314,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
         <div className="my-5 flex items-center gap-3">
           <Separator className="flex-1" />
           <span className="text-xs text-muted-foreground">
-            Completa manualmente
+            {extractionDone ? "Verifica los datos" : "Completa manualmente"}
           </span>
           <Separator className="flex-1" />
         </div>
@@ -347,7 +411,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
               <Clock className="h-3.5 w-3.5" />
               Dejar para después
             </Button>
-            <Button type="submit" size="sm" className="gap-1.5" disabled={saving}>
+            <Button type="submit" size="sm" className="gap-1.5" disabled={saving || extracting}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
