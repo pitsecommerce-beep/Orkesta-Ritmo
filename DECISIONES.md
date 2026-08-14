@@ -121,3 +121,17 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 47. **`opcion_trimestral` se ignora si la obligación no admite trimestral**: RESICO PF no admite trimestral (Art. 113-E LISR), así que aunque el contribuyente tenga `opcion_trimestral=True`, el calendario genera 12 periodos mensuales. Solo Arrendamiento (Art. 106 LISR) genera 4 periodos trimestrales.
 
 48. **Calendario ordenado por fecha_limite**: Los periodos se devuelven ordenados por fecha, con ISR antes que IVA en la misma fecha. Esto facilita la visualización cronológica en el dashboard.
+
+## Extracción de Constancia de Situación Fiscal
+
+49. **Descripción → clave SAT, no clave numérica en PDF**: La constancia del SAT no muestra la clave numérica del régimen (612, 606, etc.), solo la descripción textual. El catálogo `_CATALOGO_REGIMEN` mapea descripciones normalizadas a claves SAT usando los valores oficiales del catálogo c_RegimenFiscal.
+
+50. **Normalización NFD + strip acentos para comparación**: Las descripciones del PDF pueden tener variaciones de acentos, mayúsculas, puntuación final y espacios múltiples. `normalizar_texto()` aplica NFD → quita categoría Mn → lower → strip punto → colapsa espacios. Esto es suficiente para el catálogo SAT sin necesidad de fuzzy matching.
+
+51. **pdfplumber `extract_tables()` para regímenes y obligaciones**: Las secciones de regímenes y obligaciones en la constancia son tablas PDF estructuradas. Se usa `extract_tables()` en vez de regex sobre texto plano para mayor robustez. El fallback a texto plano (`extraer_constancia()` sin PDF) se mantiene para tests y procesamiento externo.
+
+52. **Periodicidad derivada del texto de vencimiento, no hardcodeada**: En vez de asumir periodicidad por tipo de obligación, se buscan patrones ("mensual", "bimestral", "trimestral", "anual") en el campo "Descripción Vencimiento" de la tabla de obligaciones. Si ningún patrón coincide, se marca "desconocida".
+
+53. **Dos entrypoints: `extraer_constancia()` para texto, `extraer_constancia_desde_pdf()` para archivo**: Mantiene backward compatibility con la firma original que acepta texto. La nueva función acepta `Path | str` y maneja pdfplumber internamente.
+
+54. **Tests de PDF real con `skipif`**: Los tests que necesitan un PDF real del SAT se saltan automáticamente si el fixture no existe en `tests/fixtures/`. Esto permite que CI pase sin PII. Los tests de catálogo, normalización y periodicidad usan literales y siempre corren.

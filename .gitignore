@@ -44,3 +44,7 @@ logs/
 
 # Uploads (local dev)
 uploads/
+
+# Fixtures con PII (constancias, PDFs del SAT)
+packages/tax-engine/tests/fixtures/*.pdf
+packages/tax-engine/tests/fixtures/*_expected.json

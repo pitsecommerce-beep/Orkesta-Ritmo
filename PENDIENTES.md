@@ -20,7 +20,13 @@ Elementos que quedaron fuera de la iteración 1 o bloqueados por dependencias ex
 
 ## Parseo
 
-- [ ] **Parsing de Constancia de Situación Fiscal.** El módulo `constancia.py` tiene la estructura de extracción y el mapeo de claves SAT, pero `extraer_constancia()` necesita un PDF real del SAT para calibrar los patrones regex. Los PDFs del SAT varían entre años. Subir un documento real y ajustar los patrones.
+- [ ] **Calibración de constancia con PDFs reales.** El módulo `constancia.py` tiene extracción completa vía pdfplumber (tablas de regímenes y obligaciones, bloque de identificación, normalización de descripciones, catálogo c_RegimenFiscal). Falta calibrar con documentos reales del SAT en `packages/tax-engine/tests/fixtures/`. Casos pendientes:
+  - [ ] Constancia PF con un solo régimen (RESICO o Arrendamiento)
+  - [ ] Constancia PF con múltiples regímenes vigentes
+  - [ ] Constancia PF con régimen dado de baja (no vigente)
+  - [ ] Constancia PM (validar 12 caracteres de RFC)
+  - [ ] Constancia con formato de tabla diferente entre años del SAT
+  - [ ] Constancia con obligaciones que incluyan periodicidad bimestral
 - [ ] **Descarga masiva vía PAC.** La abstracción `CfdiSource` existe con `PacSource` que levanta `NotImplementedError`. Se necesita contrato con un PAC autorizado.
 - [ ] **Adaptadores bancarios.** Solo Mercado Pago está implementado. Esqueletos de Santander, BBVA, Nu y Revolut creados.
 
