@@ -88,8 +88,12 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
         setRegimen(datos.regimen);
       }
       setExtractionDone(true);
-    } catch {
-      // Silently fail — user can still fill manually
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Error al leer la constancia: ${err.message}`
+          : "No se pudo leer la constancia. Puedes llenar los datos manualmente.",
+      );
     } finally {
       setExtracting(false);
     }
