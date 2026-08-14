@@ -12,14 +12,30 @@ export async function GET(request: Request) {
     if (supabase) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
-        if (verify) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          if (verify) {
             await supabase
               .from("user_profiles")
               .update({ email_verificado: true })
               .eq("id", user.id);
           }
+
+          await supabase
+            .from("user_profiles")
+            .select("id")
+            .eq("id", user.id)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (!data) {
+                return supabase.from("user_profiles").insert({
+                  id: user.id,
+                  email: user.email,
+                  email_verificado: false,
+                  onboarding_completado: false,
+                });
+              }
+            });
         }
         return NextResponse.redirect(`${origin}${next}`);
       }
