@@ -87,3 +87,7 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 34. **Eliminado fallback de estimación en RESICO PF**: Cuando el ingreso excede todos los tramos, `impuesto_determinado` queda en 0 y se genera alerta. No se aplica la tasa del último tramo como estimación — producir un número incorrecto es peor que no producir ninguno.
 
 35. **Tests de RESICO PM reescritos**: Los 8 tests directos del motor se reemplazaron por 2 tests que verifican que el engine rechaza RESICO PM con `RegimenEnValidacionError`.
+
+## Corrección 1.2 — Bloque 7
+
+36. **Validación de tarifas movida a cada función de cálculo**: `calcular_isr_resico_pf` y `calcular_isr_arrendamiento` ahora validan que reciben tarifas no vacías y lanzan `EjercicioNoDisponibleError` directamente. El engine mantiene su validación como segunda línea de defensa. IVA no usa tarifas, no necesita esta validación.

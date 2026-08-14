@@ -14,6 +14,7 @@ Para trimestral: la tarifa mensual se triplica en cuota fija y límites.
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
+from tax_engine.exceptions import EjercicioNoDisponibleError
 from tax_engine.tarifas_fallback import buscar_tramo_art96
 from tax_engine.types import (
     DesgloseISR,
@@ -64,6 +65,9 @@ def calcular_isr_arrendamiento(
     Returns:
         Tupla de (DesgloseISR, alertas).
     """
+    if not tarifas_art96:
+        raise EjercicioNoDisponibleError(0, "No tiene tarifas Art. 96 cargadas.")
+
     alertas: list[str] = []
     trazabilidad: list[TrazabilidadCfdi] = []
 

@@ -12,6 +12,7 @@ RESICO PF es un pago definitivo mensual:
 from decimal import Decimal
 
 from tax_engine.clasificador import CfdiClasificado
+from tax_engine.exceptions import EjercicioNoDisponibleError
 from tax_engine.tarifas_fallback import buscar_tramo_resico
 from tax_engine.types import (
     DesgloseISR,
@@ -34,6 +35,9 @@ def calcular_isr_resico_pf(
     Returns:
         Tupla de (DesgloseISR, alertas).
     """
+    if not tarifas_resico:
+        raise EjercicioNoDisponibleError(0, "No tiene tarifas RESICO cargadas.")
+
     alertas: list[str] = []
     trazabilidad: list[TrazabilidadCfdi] = []
 
