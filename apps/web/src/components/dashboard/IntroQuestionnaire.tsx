@@ -68,13 +68,10 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
         body: formData,
       });
 
-      if (!res.ok) {
-        return;
-      }
-
       const datos = await res.json();
 
-      if (!datos.valido) {
+      if (!res.ok || !datos.valido) {
+        setError(datos.error || "No se pudo extraer datos del PDF");
         return;
       }
 
