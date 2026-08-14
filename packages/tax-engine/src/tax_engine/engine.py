@@ -13,8 +13,8 @@ from tax_engine.arrendamiento import calcular_isr_arrendamiento
 from tax_engine.clasificador import clasificar_cfdis
 from tax_engine.iva import calcular_iva
 from tax_engine.resico_pf import calcular_isr_resico_pf
-from tax_engine.resico_pm import calcular_isr_resico_pm
-from tax_engine.exceptions import EjercicioNoDisponibleError
+
+from tax_engine.exceptions import EjercicioNoDisponibleError, RegimenEnValidacionError
 from tax_engine.tarifas_fallback import obtener_ejercicio as _obtener_ejercicio_fallback
 from tax_engine.types import (
     CfdiNormalizado,
@@ -55,6 +55,7 @@ def calcular(
 
     Raises:
         EjercicioNoDisponibleError: Si el ejercicio no tiene tarifas disponibles.
+        RegimenEnValidacionError: Si el regimen esta temporalmente deshabilitado.
     """
     alertas: list[str] = []
 
@@ -66,8 +67,15 @@ def calcular(
             "No existen tarifas cargadas para este ejercicio.",
         )
 
+    if perfil.regimen == Regimen.RESICO_PM:
+        raise RegimenEnValidacionError(
+            perfil.regimen.value,
+            "RESICO Persona Moral usa tarifas incorrectas (PF). "
+            "Deshabilitado hasta implementar tarifa correcta.",
+        )
+
     # Validar que el ejercicio tenga tarifas
-    if perfil.regimen in (Regimen.RESICO_PF, Regimen.RESICO_PF_SUELDOS, Regimen.RESICO_PM):
+    if perfil.regimen in (Regimen.RESICO_PF, Regimen.RESICO_PF_SUELDOS):
         if not ejercicio.tarifas_resico:
             raise EjercicioNoDisponibleError(
                 ejercicio_year,
@@ -95,11 +103,6 @@ def calcular(
             ejercicio.tarifas_art96,
             tipo_deduccion=perfil.tipo_deduccion,
             opcion_trimestral=perfil.opcion_trimestral,
-        )
-    elif perfil.regimen == Regimen.RESICO_PM:
-        isr, alertas_isr = calcular_isr_resico_pm(
-            cfdis_clasificados,
-            ejercicio.tarifas_resico,
         )
     else:
         raise ValueError(f"Regimen no soportado: {perfil.regimen}")

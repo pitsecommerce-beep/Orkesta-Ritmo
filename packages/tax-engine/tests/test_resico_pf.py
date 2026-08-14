@@ -239,7 +239,7 @@ class TestResicoPfISR:
         """
         Ingreso que excede todos los tramos RESICO.
         Ingreso: $300,000 -> Excede tramo 5 ($291,666.66)
-        Debe generar alerta.
+        No se calcula ISR (sin estimacion), solo alerta.
         """
         cfdi = make_cfdi_pue(uuid="test-11", subtotal=Decimal("300000"))
         clasificados = clasificar_cfdis([cfdi])
@@ -248,8 +248,7 @@ class TestResicoPfISR:
         )
 
         assert isr.ingresos == Decimal("300000")
-        # Should apply last bracket rate as estimate: 300000 * 2.50% = 7500
-        assert isr.impuesto_determinado == Decimal("7500")
+        assert isr.impuesto_determinado == Decimal("0")
         assert len(alertas) > 0
         assert any("excede" in a.lower() for a in alertas)
 

@@ -61,20 +61,11 @@ def calcular_isr_resico_pf(
         tramo = buscar_tramo_resico(base_gravable, tarifas_resico)
 
         if tramo is None:
-            # Ingreso excede el limite superior del ultimo tramo
             alertas.append(
                 f"Ingreso mensual ({base_gravable}) excede el limite maximo "
-                f"de la tarifa RESICO. Verificar si el contribuyente debe "
-                f"cambiar de regimen."
+                f"de la tarifa RESICO. No se puede calcular ISR. "
+                f"Verificar si el contribuyente debe cambiar de regimen."
             )
-            # Aplicar la tasa del ultimo tramo como mejor estimacion
-            if tarifas_resico:
-                ultimo_tramo = tarifas_resico[-1]
-                impuesto_determinado = base_gravable * ultimo_tramo.tasa / Decimal("100")
-                alertas.append(
-                    f"Se aplico la tasa del ultimo tramo ({ultimo_tramo.tasa}%) "
-                    f"como estimacion."
-                )
         else:
             impuesto_determinado = base_gravable * tramo.tasa / Decimal("100")
 

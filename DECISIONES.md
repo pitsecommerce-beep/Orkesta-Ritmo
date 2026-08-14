@@ -79,3 +79,11 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 31. **"ISR — Pago definitivo" → "ISR — Desglose del periodo"** en detalle de periodo: El texto anterior asumía RESICO (pago definitivo). Para arrendamiento son pagos provisionales. El título neutro aplica a ambos regímenes.
 
 32. **Fixtures de test actualizados**: `perfil_arrendamiento` y `perfil_arrendamiento_trimestral` en conftest.py usan `tipo_deduccion="opcional"` en lugar de `"ciega"`, consistente con el nuevo default.
+
+## Corrección 1.2 — Bloque 1
+
+33. **RESICO PM deshabilitado con `RegimenEnValidacionError`**: El engine lanza esta excepción antes de intentar calcular. El módulo `resico_pm.py` se conserva para cuando se implemente la tarifa correcta, pero no es invocado.
+
+34. **Eliminado fallback de estimación en RESICO PF**: Cuando el ingreso excede todos los tramos, `impuesto_determinado` queda en 0 y se genera alerta. No se aplica la tasa del último tramo como estimación — producir un número incorrecto es peor que no producir ninguno.
+
+35. **Tests de RESICO PM reescritos**: Los 8 tests directos del motor se reemplazaron por 2 tests que verifican que el engine rechaza RESICO PM con `RegimenEnValidacionError`.
