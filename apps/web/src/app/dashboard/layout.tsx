@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ChatPanel } from "@/components/dashboard/ChatPanel";
 import { TarifaAlertBanner, PrivacyReviewBanner, EmailVerificationBanner } from "@/components/dashboard/AlertBanners";
 import { DashboardProviders } from "@/components/dashboard/Providers";
+import { OnboardingTour } from "@/components/dashboard/OnboardingTour";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </main>
         <ChatPanel />
+        <OnboardingTour />
       </div>
     </DashboardProviders>
   );

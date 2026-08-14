@@ -8,7 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Shield, Users, Settings, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Shield, Users, Settings, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 const REGIMEN_LABELS: Record<string, string> = {
@@ -38,6 +45,11 @@ export default function ConfiguracionPage() {
   const [tenant, setTenant] = useState<TenantData | null>(null);
   const [members, setMembers] = useState<MembershipData[]>([]);
   const [nombre, setNombre] = useState("");
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("lectura");
+  const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -80,6 +92,56 @@ export default function ConfiguracionPage() {
     load();
   }, []);
 
+  async function handleInvite() {
+    if (!inviteEmail || !tenant) return;
+    setInviting(true);
+    setInviteMsg(null);
+
+    const supabase = createClient();
+    if (!supabase) { setInviting(false); return; }
+
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", inviteEmail)
+      .maybeSingle();
+
+    if (!profile) {
+      setInviteMsg({ type: "error", text: "No se encontro un usuario con ese correo. Debe registrarse primero." });
+      setInviting(false);
+      return;
+    }
+
+    const already = members.find(m => m.user_profiles?.email === inviteEmail);
+    if (already) {
+      setInviteMsg({ type: "error", text: "Este usuario ya es miembro del workspace." });
+      setInviting(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("memberships")
+      .insert({
+        tenant_id: tenant.id,
+        user_id: profile.id,
+        rol: inviteRole,
+      });
+
+    if (error) {
+      setInviteMsg({ type: "error", text: error.message });
+    } else {
+      setInviteMsg({ type: "ok", text: `${inviteEmail} agregado como ${inviteRole}.` });
+      setInviteEmail("");
+      setMembers(prev => [...prev, {
+        rol: inviteRole,
+        user_id: profile.id,
+        user_profiles: { email: inviteEmail },
+      }]);
+    }
+
+    setInviting(false);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-16">
@@ -98,7 +160,6 @@ export default function ConfiguracionPage() {
       </div>
 
       <div className="mt-6 space-y-6 max-w-2xl">
-        {/* Workspace info */}
         <Card className="animate-fade-in-up stagger-1">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
@@ -147,7 +208,6 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
 
-        {/* Team */}
         <Card className="animate-fade-in-up stagger-2">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
@@ -183,18 +243,41 @@ export default function ConfiguracionPage() {
             <Separator className="my-4" />
             <div>
               <Label>Invitar miembro</Label>
-              <div className="mt-1 flex gap-2">
-                <Input placeholder="correo@ejemplo.com" className="flex-1" />
-                <Button variant="outline">Invitar</Button>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <Input
+                  placeholder="correo@ejemplo.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="flex-1"
+                />
+                <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="propietario">Propietario</SelectItem>
+                    <SelectItem value="contador">Contador</SelectItem>
+                    <SelectItem value="lectura">Lectura</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  onClick={handleInvite}
+                  disabled={inviting || !inviteEmail}
+                >
+                  {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invitar"}
+                </Button>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Roles disponibles: propietario, contador, lectura
-              </p>
+              {inviteMsg && (
+                <div className={`mt-2 flex items-center gap-1.5 text-sm ${inviteMsg.type === "ok" ? "text-green-600" : "text-red-600"}`}>
+                  {inviteMsg.type === "ok" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                  {inviteMsg.text}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Security */}
         <Card className="animate-fade-in-up stagger-3">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
