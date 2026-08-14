@@ -91,3 +91,33 @@ Registro de decisiones tomadas durante la construcción de Orkesta Ritmo, iterac
 ## Corrección 1.2 — Bloque 7
 
 36. **Validación de tarifas movida a cada función de cálculo**: `calcular_isr_resico_pf` y `calcular_isr_arrendamiento` ahora validan que reciben tarifas no vacías y lanzan `EjercicioNoDisponibleError` directamente. El engine mantiene su validación como segunda línea de defensa. IVA no usa tarifas, no necesita esta validación.
+
+## Corrección 1.2 — Bloque 2
+
+37. **RFC se valida con regex que incluye fecha AAMMDD**: El módulo `rfc.py` valida que los 6 dígitos centrales sean una fecha válida (mes 01-12, día 01-31), no solo dígitos. La longitud determina tipo de persona: 13 = física (4 letras iniciales), 12 = moral (3 letras iniciales).
+
+38. **Régimen se deriva de la constancia, no del usuario**: `constancia.py` define `derivar_regimen_de_constancia()` que mapea claves SAT a regímenes del sistema. Si la constancia lista arrendamiento y RESICO PF simultáneamente, prevalece arrendamiento. RESICO PM se mapea como no soportado (consistente con Bloque 1).
+
+39. **Parsing de constancia pendiente de documento real**: `extraer_constancia()` está estructurada pero devuelve error hasta que se calibre con un PDF real del SAT. Los patrones del PDF varían entre años. Se anotó en PENDIENTES.md.
+
+40. **RESICO PM eliminado de `REGIMENES_ADMITIDOS` en API**: Tanto `onboarding.py` como `tenants.py` ya no admiten RESICO PM. Consistente con la eliminación en selectores de UI (Bloque 5) y el `RegimenEnValidacionError` del motor (Bloque 1).
+
+## Corrección 1.2 — Bloque 3
+
+41. **`perfiles_obligacion` como fuente de verdad**: La tabla define qué impuestos debe declarar cada régimen, con qué periodicidad y en qué día del mes vence. Reemplaza la lógica condicional dispersa en el código por configuración en base de datos. Cada régimen tiene exactamente 2 filas (ISR + IVA).
+
+42. **`tipo_deduccion` enum: 'ciega' → 'opcional'**: PostgreSQL `ALTER TYPE RENAME VALUE` cambia el valor en el enum y en todos los registros existentes. El término "deducción ciega" no existe en la LISR; el correcto es "deducción opcional del 35%" (Art. 115 LISR). Consistente con la decisión 27 que cambió el default en Python.
+
+43. **RESICO PM en `perfiles_obligacion` con `activo=false`**: Se registra para completitud documental pero no genera periodos. El motor sigue lanzando `RegimenEnValidacionError` antes de cualquier consulta a esta tabla.
+
+44. **`es_pago_definitivo` distingue RESICO de Arrendamiento**: RESICO PF es pago definitivo (no presenta anual de ISR). Arrendamiento es pago provisional (presenta anual). El campo permite que la generación de calendario sepa si debe crear un periodo anual.
+
+## Corrección 1.2 — Bloque 4
+
+45. **Días inhábiles como constantes por año**: `DIAS_INHABILES_2025` y `DIAS_INHABILES_2026` incluyen feriados oficiales de la LFT y Semana Santa. Un año sin datos asume que no hay feriados (fallback conservador — mejor generar con fecha sin ajustar que fallar).
+
+46. **Declaración anual: último día hábil de abril, no el 30**: La función retrocede desde el 30 de abril hacia atrás hasta encontrar un día hábil. Esto es correcto para personas físicas.
+
+47. **`opcion_trimestral` se ignora si la obligación no admite trimestral**: RESICO PF no admite trimestral (Art. 113-E LISR), así que aunque el contribuyente tenga `opcion_trimestral=True`, el calendario genera 12 periodos mensuales. Solo Arrendamiento (Art. 106 LISR) genera 4 periodos trimestrales.
+
+48. **Calendario ordenado por fecha_limite**: Los periodos se devuelven ordenados por fecha, con ISR antes que IVA en la misma fecha. Esto facilita la visualización cronológica en el dashboard.
