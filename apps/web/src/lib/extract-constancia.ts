@@ -66,7 +66,11 @@ const REGIMENES_SOPORTADOS: Record<string, string> = {
 // --- Regex para bloque de identificación ---
 
 const RE_RFC = /RFC\s*:\s*([A-ZÑ&0-9]{12,13})/i;
-const RE_NOMBRE = /(?:Nombre|Denominaci[oó]n|Raz[oó]n\s+Social)\s*(?:\([^)]*\))?\s*:\s*(.+)/i;
+const RE_NOMBRE_COMPLETO =
+  /(?:Denominaci[oó]n|Raz[oó]n\s+Social)\s*(?:\([^)]*\))?\s*:\s*(.+)/i;
+const RE_NOMBRE_PARTES = /Nombre\s*\(?s?\)?\s*:\s*(.+)/i;
+const RE_PRIMER_APELLIDO = /Primer\s+Apellido\s*:\s*(.+)/i;
+const RE_SEGUNDO_APELLIDO = /Segundo\s+Apellido\s*:\s*(.+)/i;
 const RE_CP = /C[oó]digo\s+Postal\s*:\s*(\d{5})/i;
 
 // --- Detección de regímenes en el texto ---
@@ -115,8 +119,22 @@ export function extraerDatosConstancia(texto: string): DatosConstanciaFront {
   const rfcMatch = RE_RFC.exec(texto);
   const rfc = rfcMatch ? rfcMatch[1].toUpperCase() : "";
 
-  const nombreMatch = RE_NOMBRE.exec(texto);
-  const nombre = nombreMatch ? nombreMatch[1].trim() : "";
+  const nombreCompletoMatch = RE_NOMBRE_COMPLETO.exec(texto);
+  let nombre = "";
+  if (nombreCompletoMatch) {
+    nombre = nombreCompletoMatch[1].trim();
+  } else {
+    const partesNombre = RE_NOMBRE_PARTES.exec(texto);
+    const primerAp = RE_PRIMER_APELLIDO.exec(texto);
+    const segundoAp = RE_SEGUNDO_APELLIDO.exec(texto);
+    nombre = [
+      partesNombre?.[1]?.trim(),
+      primerAp?.[1]?.trim(),
+      segundoAp?.[1]?.trim(),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
 
   let tipoPersona: "fisica" | "moral" | "" = "";
   if (rfc.length === 13) tipoPersona = "fisica";
