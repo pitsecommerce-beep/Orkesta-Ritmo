@@ -30,6 +30,15 @@ from tax_engine.types import (
 from tax_engine.engine import calcular
 from tax_engine.exceptions import EjercicioNoDisponibleError, RegimenEnValidacionError
 from tax_engine.rfc import ResultadoRfc, validar_rfc
+from tax_engine.constancia import (
+    DatosConstancia,
+    RegimenConstancia,
+    ObligacionConstancia,
+    extraer_constancia,
+    extraer_constancia_desde_pdf,
+    derivar_regimen_de_constancia,
+    mapear_regimen_sat,
+)
 from tax_engine.tarifas_fallback import (
     obtener_ejercicio as obtener_ejercicio_fallback,
     buscar_tramo_resico,
@@ -62,4 +71,11 @@ __all__ = [
     "buscar_tramo_art96",
     "ResultadoRfc",
     "validar_rfc",
+    "DatosConstancia",
+    "RegimenConstancia",
+    "ObligacionConstancia",
+    "extraer_constancia",
+    "extraer_constancia_desde_pdf",
+    "derivar_regimen_de_constancia",
+    "mapear_regimen_sat",
 ]
