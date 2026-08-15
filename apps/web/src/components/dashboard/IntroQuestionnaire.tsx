@@ -1,46 +1,49 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase";
 import {
   ClipboardList,
   Upload,
-  FileText,
   Loader2,
   ArrowRight,
   Clock,
   X,
   CheckCircle,
+  User,
+  Building2,
+  Briefcase,
+  Home,
+  Wallet,
 } from "lucide-react";
 
-const REGIMENES = [
-  { value: "RESICO_PF", label: "RESICO Persona Física" },
-  { value: "RESICO_PF_SUELDOS", label: "RESICO PF con Sueldos" },
-  { value: "ARRENDAMIENTO", label: "Arrendamiento" },
-  { value: "ARRENDAMIENTO_SUELDOS", label: "Arrendamiento con Sueldos" },
-] as const;
+type TipoPersona = "fisica" | "moral" | "";
 
-const TIPO_PERSONA = [
-  { value: "fisica", label: "Persona Física" },
-  { value: "moral", label: "Persona Moral" },
-] as const;
+function derivarRegimen(
+  tipoPersona: TipoPersona,
+  actividadPrincipal: string,
+  tieneSueldo: boolean,
+): string {
+  if (tipoPersona === "moral") return "RESICO_PM";
+  if (actividadPrincipal === "arrendamiento") {
+    return tieneSueldo ? "ARRENDAMIENTO_SUELDOS" : "ARRENDAMIENTO";
+  }
+  if (actividadPrincipal === "resico") {
+    return tieneSueldo ? "RESICO_PF_SUELDOS" : "RESICO_PF";
+  }
+  return "";
+}
 
 export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) {
   const [nombre, setNombre] = useState("");
   const [rfc, setRfc] = useState("");
-  const [tipoPersona, setTipoPersona] = useState("");
-  const [regimen, setRegimen] = useState("");
+  const [tipoPersona, setTipoPersona] = useState<TipoPersona>("");
+  const [actividadPrincipal, setActividadPrincipal] = useState("");
+  const [tieneSueldo, setTieneSueldo] = useState(false);
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [constanciaFile, setConstanciaFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -49,9 +52,18 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const clean = rfc.toUpperCase().replace(/\s/g, "");
+    if (clean.length === 13 && tipoPersona !== "fisica") setTipoPersona("fisica");
+    else if (clean.length === 12 && tipoPersona !== "moral") setTipoPersona("moral");
+  }, [rfc, tipoPersona]);
+
   function validateRfc(value: string): boolean {
     const clean = value.toUpperCase().replace(/\s/g, "");
-    return (clean.length === 12 || clean.length === 13) && /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/.test(clean);
+    return (
+      (clean.length === 12 || clean.length === 13) &&
+      /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/.test(clean)
+    );
   }
 
   async function extractFromPdf(file: File) {
@@ -87,18 +99,21 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
         return;
       }
 
-      if (datos.rfc && !rfc) {
-        setRfc(datos.rfc);
+      if (datos.rfc && !rfc) setRfc(datos.rfc);
+      if (datos.nombre && !nombre) setNombre(datos.nombre);
+      if (datos.tipoPersona && !tipoPersona) setTipoPersona(datos.tipoPersona);
+
+      if (datos.regimen && !actividadPrincipal) {
+        const r = datos.regimen as string;
+        if (r.startsWith("ARRENDAMIENTO")) {
+          setActividadPrincipal("arrendamiento");
+          if (r.includes("SUELDOS")) setTieneSueldo(true);
+        } else if (r.startsWith("RESICO_PF")) {
+          setActividadPrincipal("resico");
+          if (r.includes("SUELDOS")) setTieneSueldo(true);
+        }
       }
-      if (datos.nombre && !nombre) {
-        setNombre(datos.nombre);
-      }
-      if (datos.tipoPersona && !tipoPersona) {
-        setTipoPersona(datos.tipoPersona);
-      }
-      if (datos.regimen && !regimen) {
-        setRegimen(datos.regimen);
-      }
+
       setExtractionDone(true);
     } catch (err) {
       setError(
@@ -132,12 +147,13 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
     }
 
     if (!tipoPersona) {
-      setError("Selecciona el tipo de persona.");
+      setError("Selecciona si eres persona física o moral.");
       return;
     }
 
+    const regimen = derivarRegimen(tipoPersona, actividadPrincipal, tieneSueldo);
     if (!regimen) {
-      setError("Selecciona tu régimen fiscal.");
+      setError("Selecciona tu actividad principal.");
       return;
     }
 
@@ -256,12 +272,13 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             Comencemos por lo básico
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sube tu constancia para llenar los datos automáticamente, o complétalos manualmente.
+            Necesitamos algunos datos fiscales para preparar tus declaraciones.
           </p>
         </div>
 
+        {/* Constancia upload — optional */}
         <div
-          className={`rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
+          className={`rounded-lg border-2 border-dashed p-3 text-center transition-colors ${
             constanciaFile
               ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
               : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
@@ -273,7 +290,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             <div className="flex items-center justify-center gap-3 py-1">
               <Loader2 className="h-5 w-5 animate-spin text-[var(--color-azul)]" />
               <p className="text-sm font-medium text-[var(--color-azul)]">
-                Extrayendo datos de la constancia...
+                Leyendo constancia...
               </p>
             </div>
           ) : constanciaFile ? (
@@ -295,23 +312,18 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
               </button>
             </div>
           ) : (
-            <>
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-2 text-sm font-medium">
-                Sube tu Constancia de Situación Fiscal
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Arrastra tu PDF aquí o{" "}
+            <div className="py-1">
+              <p className="text-sm text-muted-foreground">
+                <Upload className="inline h-4 w-4 mr-1 -mt-0.5" />
+                ¿Tienes tu Constancia de Situación Fiscal?{" "}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="text-[var(--color-azul)] underline"
                 >
-                  selecciona un archivo
-                </button>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground italic">
-                Se leerán RFC, nombre y régimen del PDF
+                  Súbela aquí
+                </button>{" "}
+                para llenar todo automáticamente.
               </p>
               <input
                 ref={fileInputRef}
@@ -320,19 +332,20 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 className="hidden"
                 onChange={handleFileSelect}
               />
-            </>
+            </div>
           )}
         </div>
 
         <div className="my-5 flex items-center gap-3">
           <Separator className="flex-1" />
           <span className="text-xs text-muted-foreground">
-            {extractionDone ? "Verifica los datos" : "Completa manualmente"}
+            {extractionDone ? "Verifica los datos" : "Tus datos fiscales"}
           </span>
           <Separator className="flex-1" />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Nombre */}
           <div>
             <Label htmlFor="q-nombre">Nombre completo o razón social</Label>
             <Input
@@ -345,71 +358,176 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
             />
           </div>
 
+          {/* RFC */}
           <div>
             <Label htmlFor="q-rfc">RFC</Label>
             <Input
               id="q-rfc"
               placeholder="XAXX010101000"
-              className="mt-1 uppercase"
+              className="mt-1 uppercase font-mono"
               maxLength={13}
               value={rfc}
               onChange={(e) => setRfc(e.target.value.toUpperCase())}
               disabled={saving}
             />
+            {rfc.length >= 12 && tipoPersona && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Detectado como{" "}
+                <span className="font-medium">
+                  {tipoPersona === "fisica" ? "Persona Física" : "Persona Moral"}
+                </span>
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Tipo de persona</Label>
-              <Select
-                value={tipoPersona}
-                onValueChange={setTipoPersona}
-                disabled={saving}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIPO_PERSONA.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Régimen fiscal</Label>
-              <Select
-                value={regimen}
-                onValueChange={setRegimen}
-                disabled={saving}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selecciona" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGIMENES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+          {/* Tipo de persona */}
           <div>
-            <Label htmlFor="q-fecha">Fecha de nacimiento (opcional)</Label>
-            <Input
-              id="q-fecha"
-              type="date"
-              className="mt-1"
-              value={fechaNacimiento}
-              onChange={(e) => setFechaNacimiento(e.target.value)}
-              disabled={saving}
-            />
+            <Label className="mb-2 block">¿Eres persona física o moral?</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setTipoPersona("fisica");
+                  if (actividadPrincipal === "") setActividadPrincipal("");
+                }}
+                disabled={saving}
+                className={`flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+                  tipoPersona === "fisica"
+                    ? "border-[var(--color-azul)] bg-[var(--color-primary-light)]"
+                    : "border-muted hover:border-muted-foreground/50"
+                }`}
+              >
+                <User className={`h-5 w-5 shrink-0 ${tipoPersona === "fisica" ? "text-[var(--color-azul)]" : "text-muted-foreground"}`} />
+                <div>
+                  <p className="text-sm font-medium">Persona Física</p>
+                  <p className="text-xs text-muted-foreground">Individuo</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTipoPersona("moral");
+                  setActividadPrincipal("");
+                  setTieneSueldo(false);
+                }}
+                disabled={saving}
+                className={`flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+                  tipoPersona === "moral"
+                    ? "border-[var(--color-azul)] bg-[var(--color-primary-light)]"
+                    : "border-muted hover:border-muted-foreground/50"
+                }`}
+              >
+                <Building2 className={`h-5 w-5 shrink-0 ${tipoPersona === "moral" ? "text-[var(--color-azul)]" : "text-muted-foreground"}`} />
+                <div>
+                  <p className="text-sm font-medium">Persona Moral</p>
+                  <p className="text-xs text-muted-foreground">Empresa</p>
+                </div>
+              </button>
+            </div>
           </div>
+
+          {/* Actividad principal — solo persona física */}
+          {tipoPersona === "fisica" && (
+            <div>
+              <Label className="mb-2 block">¿Cuál es tu actividad principal?</Label>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setActividadPrincipal("resico")}
+                  disabled={saving}
+                  className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+                    actividadPrincipal === "resico"
+                      ? "border-[var(--color-azul)] bg-[var(--color-primary-light)]"
+                      : "border-muted hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <Briefcase className={`h-5 w-5 shrink-0 ${actividadPrincipal === "resico" ? "text-[var(--color-azul)]" : "text-muted-foreground"}`} />
+                  <div>
+                    <p className="text-sm font-medium">Negocio propio o servicios profesionales</p>
+                    <p className="text-xs text-muted-foreground">
+                      Facturas por tu trabajo, honorarios o ventas
+                    </p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActividadPrincipal("arrendamiento")}
+                  disabled={saving}
+                  className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left transition-colors ${
+                    actividadPrincipal === "arrendamiento"
+                      ? "border-[var(--color-azul)] bg-[var(--color-primary-light)]"
+                      : "border-muted hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <Home className={`h-5 w-5 shrink-0 ${actividadPrincipal === "arrendamiento" ? "text-[var(--color-azul)]" : "text-muted-foreground"}`} />
+                  <div>
+                    <p className="text-sm font-medium">Rento propiedades</p>
+                    <p className="text-xs text-muted-foreground">
+                      Recibo ingresos por renta de inmuebles
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Persona moral — info */}
+          {tipoPersona === "moral" && (
+            <div className="rounded-lg border bg-muted/50 p-3">
+              <p className="text-sm text-muted-foreground">
+                <Building2 className="inline h-4 w-4 mr-1 -mt-0.5" />
+                Se configurará con el <span className="font-medium">Régimen Simplificado de Confianza</span> para personas morales.
+              </p>
+            </div>
+          )}
+
+          {/* ¿También recibes sueldo? — solo persona física con actividad seleccionada */}
+          {tipoPersona === "fisica" && actividadPrincipal && (
+            <label
+              className={`flex items-center gap-3 rounded-lg border-2 p-3 cursor-pointer transition-colors ${
+                tieneSueldo
+                  ? "border-[var(--color-azul)] bg-[var(--color-primary-light)]"
+                  : "border-muted hover:border-muted-foreground/50"
+              }`}
+            >
+              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
+                tieneSueldo
+                  ? "border-[var(--color-azul)] bg-[var(--color-azul)]"
+                  : "border-muted-foreground/50"
+              }`}>
+                {tieneSueldo && <CheckCircle className="h-3.5 w-3.5 text-white" />}
+              </div>
+              <Wallet className={`h-5 w-5 shrink-0 ${tieneSueldo ? "text-[var(--color-azul)]" : "text-muted-foreground"}`} />
+              <div>
+                <p className="text-sm font-medium">También recibo un sueldo</p>
+                <p className="text-xs text-muted-foreground">
+                  Soy empleado y recibo nómina además de mi actividad
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={tieneSueldo}
+                onChange={(e) => setTieneSueldo(e.target.checked)}
+                className="sr-only"
+                disabled={saving}
+              />
+            </label>
+          )}
+
+          {/* Fecha de nacimiento — solo persona física */}
+          {tipoPersona === "fisica" && (
+            <div>
+              <Label htmlFor="q-fecha">Fecha de nacimiento (opcional)</Label>
+              <Input
+                id="q-fecha"
+                type="date"
+                className="mt-1"
+                value={fechaNacimiento}
+                onChange={(e) => setFechaNacimiento(e.target.value)}
+                disabled={saving}
+              />
+            </div>
+          )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -424,7 +542,12 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
               <Clock className="h-3.5 w-3.5" />
               Dejar para después
             </Button>
-            <Button type="submit" size="sm" className="gap-1.5" disabled={saving || extracting}>
+            <Button
+              type="submit"
+              size="sm"
+              className="gap-1.5"
+              disabled={saving || extracting}
+            >
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -432,7 +555,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 </>
               ) : (
                 <>
-                  Guardar
+                  Continuar
                   <ArrowRight className="h-3.5 w-3.5" />
                 </>
               )}
