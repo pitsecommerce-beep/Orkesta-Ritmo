@@ -56,9 +56,15 @@ const CATALOGO_REGIMEN: Record<string, string> = {
 };
 
 // --- Clave SAT → régimen del sistema ---
+// IMPORTANTE: Este mapa debe mantenerse sincronizado con
+// packages/tax-engine/src/tax_engine/constancia.py :: _MAPA_REGIMEN_SAT
+// y mapear_regimen_sat(). La fuente de verdad es el Python.
+// Correcciones Etapa 1:
+//   - 612 = Actividades Empresariales y Profesionales (NO es RESICO)
+//   - 626 = Régimen Simplificado de Confianza (RESICO real, PF si RFC=13)
+//   - 625 = Plataformas Tecnológicas → lista de espera
 
 const REGIMENES_SOPORTADOS: Record<string, string> = {
-  "612": "RESICO_PF",
   "606": "ARRENDAMIENTO",
   "626": "RESICO_PF",
 };
@@ -89,6 +95,10 @@ function detectarRegimenes(texto: string): string[] {
 }
 
 function derivarRegimen(claves: string[]): string {
+  if (claves.includes("625")) {
+    return "PLATAFORMAS_TECNOLOGICAS";
+  }
+
   const soportados = claves
     .map((c) => REGIMENES_SOPORTADOS[c])
     .filter(Boolean);

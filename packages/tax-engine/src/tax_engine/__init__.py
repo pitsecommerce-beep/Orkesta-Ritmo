@@ -44,6 +44,14 @@ from tax_engine.tarifas_fallback import (
     buscar_tramo_resico,
     buscar_tramo_art96,
 )
+from tax_engine.catalogo import (
+    CatalogoNormativo,
+    EstadoConfirmacion,
+    Jerarquia,
+    TipoTarifa,
+    TipoIndicador,
+)
+from tax_engine.catalogo_data import obtener_catalogo
 
 __all__ = [
     "calcular",
@@ -78,4 +86,10 @@ __all__ = [
     "extraer_constancia_desde_pdf",
     "derivar_regimen_de_constancia",
     "mapear_regimen_sat",
+    "CatalogoNormativo",
+    "EstadoConfirmacion",
+    "Jerarquia",
+    "TipoTarifa",
+    "TipoIndicador",
+    "obtener_catalogo",
 ]

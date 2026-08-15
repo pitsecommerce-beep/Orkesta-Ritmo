@@ -29,25 +29,23 @@ class TestEjercicioNoDisponible:
         assert exc_info.value.year == 2030
         assert "2030" in str(exc_info.value)
 
-    def test_2026_resico_tarifas_vacias_lanza_error(self):
+    def test_2026_resico_calcula(self):
+        """2026 now has populated RESICO tariffs."""
         cfdi = make_cfdi_pue(uuid="test-nd-02", subtotal=Decimal("10000"))
         perfil = PerfilFiscal(regimen=Regimen.RESICO_PF, rfc="XAXX010101000")
+        resultado = calcular([cfdi], perfil, ejercicio_year=2026, periodo=1)
 
-        with pytest.raises(EjercicioNoDisponibleError) as exc_info:
-            calcular([cfdi], perfil, ejercicio_year=2026, periodo=1)
+        assert resultado.isr.ingresos == Decimal("10000")
+        assert resultado.isr.isr_a_cargo > Decimal("0")
 
-        assert exc_info.value.year == 2026
-        assert "RESICO" in exc_info.value.motivo
-
-    def test_2026_arrendamiento_tarifas_vacias_lanza_error(self):
+    def test_2026_arrendamiento_calcula(self):
+        """2026 now has populated Art. 96 tariffs."""
         cfdi = make_cfdi_pue(uuid="test-nd-03", subtotal=Decimal("10000"))
         perfil = PerfilFiscal(regimen=Regimen.ARRENDAMIENTO, rfc="XAXX010101000")
+        resultado = calcular([cfdi], perfil, ejercicio_year=2026, periodo=1)
 
-        with pytest.raises(EjercicioNoDisponibleError) as exc_info:
-            calcular([cfdi], perfil, ejercicio_year=2026, periodo=1)
-
-        assert exc_info.value.year == 2026
-        assert "Art. 96" in exc_info.value.motivo
+        assert resultado.isr.ingresos == Decimal("10000")
+        assert resultado.isr.isr_a_cargo >= Decimal("0")
 
     def test_resico_pm_lanza_regimen_en_validacion(self):
         """RESICO PM lanza RegimenEnValidacionError antes de verificar tarifas."""

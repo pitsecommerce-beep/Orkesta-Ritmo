@@ -1,19 +1,19 @@
 """
-Extracción de datos de Constancia de Situación Fiscal (SAT).
+Extraccion de datos de Constancia de Situacion Fiscal (SAT).
 
 La constancia es un PDF emitido por el SAT que contiene:
 - RFC del contribuyente
-- Nombre o razón social
-- Tipo de persona (física o moral)
-- Régimen(es) fiscal(es) activos
+- Nombre o razon social
+- Tipo de persona (fisica o moral)
+- Regimen(es) fiscal(es) activos
 - Obligaciones fiscales
 - Domicilio fiscal
 
-El régimen se extrae de la constancia, nunca se pide al usuario.
+El regimen se extrae de la constancia, nunca se pide al usuario.
 
-Implementación:
+Implementacion:
 - pdfplumber para extraer tablas y texto del PDF.
-- Descripciones de régimen se mapean a claves SAT vía catálogo c_RegimenFiscal.
+- Descripciones de regimen se mapean a claves SAT via catalogo c_RegimenFiscal.
 - Periodicidad de obligaciones se deriva del texto de vencimiento.
 """
 
@@ -27,7 +27,7 @@ from tax_engine.rfc import validar_rfc
 
 @dataclass
 class RegimenConstancia:
-    """Régimen fiscal tal como aparece en la constancia."""
+    """Regimen fiscal tal como aparece en la constancia."""
     clave_sat: str
     descripcion: str
     fecha_alta: str
@@ -36,7 +36,7 @@ class RegimenConstancia:
 
 @dataclass
 class ObligacionConstancia:
-    """Obligación fiscal listada en la constancia."""
+    """Obligacion fiscal listada en la constancia."""
     descripcion: str
     periodicidad: str
     fecha_inicio: str
@@ -44,7 +44,7 @@ class ObligacionConstancia:
 
 @dataclass
 class DatosConstancia:
-    """Datos extraídos de la Constancia de Situación Fiscal."""
+    """Datos extraidos de la Constancia de Situacion Fiscal."""
     rfc: str
     nombre: str
     tipo_persona: str  # "fisica" | "moral"
@@ -53,9 +53,10 @@ class DatosConstancia:
     domicilio_cp: str = ""
     valido: bool = True
     error: str = ""
+    regimenes_tabla_presente: bool = False
 
 
-# --- Catálogo c_RegimenFiscal: descripción normalizada → clave SAT ---
+# --- Catalogo c_RegimenFiscal: descripcion normalizada -> clave SAT ---
 
 _CATALOGO_REGIMEN: dict[str, str] = {
     "general de ley personas morales": "601",
@@ -82,33 +83,38 @@ _CATALOGO_REGIMEN: dict[str, str] = {
     "enajenacion de acciones en bolsa de valores": "630",
 }
 
-_MAPA_REGIMEN_SAT = {
-    "612": "RESICO_PF",
-    "606": "ARRENDAMIENTO",
-    "625": "RESICO_PM",
+# Mapa corregido contra catalogo c_RegimenFiscal oficial.
+# Cada clave SAT mapea a su regimen interno correcto.
+_MAPA_REGIMEN_SAT: dict[str, str] = {
     "601": "GENERAL_LEY_PM",
-    "603": "AUTOTRANSPORTE",
+    "603": "PERSONAS_MORALES_SIN_FINES_LUCRO",
     "605": "SUELDOS_SALARIOS",
+    "606": "ARRENDAMIENTO",
+    "607": "ENAJENACION_ADQUISICION",
+    "608": "DEMAS_INGRESOS",
     "610": "RESIDENTES_EXTRANJERO",
     "611": "DIVIDENDOS",
-    "614": "AGRICOLA",
-    "615": "ACTIVIDAD_EMPRESARIAL",
+    "612": "ACTIVIDAD_EMPRESARIAL",
+    "614": "INGRESOS_INTERESES",
+    "615": "OBTENCION_PREMIOS",
     "616": "SIN_OBLIGACIONES",
+    "620": "COOPERATIVAS_DIFERIMIENTO",
     "621": "INCORPORACION_FISCAL",
     "622": "ACTIVIDADES_AGRICOLAS",
     "623": "OPCIONAL_GRUPO_SOCIEDADES",
     "624": "COORDINADOS",
-    "626": "SIMPLIFICADO_CONFIANZA_PM",
+    "625": "PLATAFORMAS_TECNOLOGICAS",
+    "626": "RESICO",  # Se resuelve a PF o PM segun longitud del RFC
     "628": "HIDROCARBUROS",
-    "629": "ENAJENACION_ADQUISICION",
+    "629": "REGIMENES_PREFERENTES",
     "630": "ENAJENACION_ACCIONES",
 }
 
 
-# --- Normalización de texto ---
+# --- Normalizacion de texto ---
 
 def normalizar_texto(texto: str) -> str:
-    """Normaliza texto para comparación: minúsculas, sin acentos, sin puntuación final, espacios colapsados."""
+    """Normaliza texto para comparacion: minusculas, sin acentos, sin puntuacion final, espacios colapsados."""
     texto = texto.strip().lower()
     texto = unicodedata.normalize("NFD", texto)
     texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
@@ -118,20 +124,33 @@ def normalizar_texto(texto: str) -> str:
 
 
 def descripcion_a_clave_sat(descripcion: str) -> str | None:
-    """Mapea una descripción de régimen del PDF a su clave SAT."""
+    """Mapea una descripcion de regimen del PDF a su clave SAT.
+
+    Primero intenta coincidencia exacta con el catalogo normalizado.
+    Si falla, intenta coincidencia por contencion para tolerar variaciones
+    en el texto entre distintos anios del SAT.
+    """
     norm = normalizar_texto(descripcion)
-    return _CATALOGO_REGIMEN.get(norm)
+    clave = _CATALOGO_REGIMEN.get(norm)
+    if clave:
+        return clave
+
+    for desc_catalogo, clave_cat in _CATALOGO_REGIMEN.items():
+        if desc_catalogo in norm or norm in desc_catalogo:
+            return clave_cat
+
+    return None
 
 
 # --- Periodicidad ---
 
-_PATRON_MENSUAL = re.compile(r"\bmensu(?:al|almente)\b|\bmes\s+inmediato\b", re.IGNORECASE)
+_PATRON_MENSUAL = re.compile(r"\bmensu(?:al|almente)\b|\bmes\s*inmediato\b", re.IGNORECASE)
 _PATRON_BIMESTRAL = re.compile(r"\bbimestr(?:al|almente)\b", re.IGNORECASE)
 _PATRON_TRIMESTRAL = re.compile(r"\btrimestr(?:al|almente)\b", re.IGNORECASE)
 _PATRON_ANUAL = re.compile(r"\banu(?:al|almente)\b", re.IGNORECASE)
 
 def derivar_periodicidad(texto_vencimiento: str) -> str:
-    """Deriva periodicidad del texto de 'Descripción Vencimiento' de la constancia."""
+    """Deriva periodicidad del texto de 'Descripcion Vencimiento' de la constancia."""
     if _PATRON_MENSUAL.search(texto_vencimiento):
         return "mensual"
     if _PATRON_BIMESTRAL.search(texto_vencimiento):
@@ -143,7 +162,7 @@ def derivar_periodicidad(texto_vencimiento: str) -> str:
     return "desconocida"
 
 
-# --- Parsing de fechas en español ---
+# --- Parsing de fechas en espanol ---
 
 _MESES_ES: dict[str, int] = {
     "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
@@ -157,7 +176,7 @@ _RE_FECHA_LARGA = re.compile(
 )
 
 def parsear_fecha_espanol(texto: str) -> str:
-    """Parsea '01 DE OCTUBRE DE 2020' → '2020-10-01'. Si falla, devuelve el texto original."""
+    """Parsea '01 DE OCTUBRE DE 2020' -> '2020-10-01'. Si falla, devuelve el texto original."""
     m = _RE_FECHA_LARGA.search(texto)
     if not m:
         return texto.strip()
@@ -170,18 +189,25 @@ def parsear_fecha_espanol(texto: str) -> str:
     return f"{anio:04d}-{mes:02d}-{dia:02d}"
 
 
-# --- Extracción de bloque de identificación ---
+# --- Extraccion de bloque de identificacion ---
+# Bug 2 fix: tolerar cero o mas espacios entre etiqueta y valor (\s* en vez de \s+)
 
-_RE_RFC = re.compile(r"RFC\s*:\s*([A-ZÑ&0-9]{12,13})", re.IGNORECASE)
-_RE_CURP = re.compile(r"CURP\s*:\s*([A-Z0-9]{18})", re.IGNORECASE)
-_RE_NOMBRE = re.compile(r"(?:Nombre|Denominaci[oó]n|Raz[oó]n Social)\s*(?:\([^)]*\))?\s*:\s*(.+)", re.IGNORECASE)
-_RE_ESTATUS = re.compile(r"Estatus\s+en\s+el\s+padr[oó]n\s*:\s*(\w+)", re.IGNORECASE)
-_RE_FECHA_INICIO = re.compile(r"Fecha\s+de\s+inicio\s+de\s+operaciones?\s*:\s*(.+)", re.IGNORECASE)
-_RE_CP = re.compile(r"C[oó]digo\s+Postal\s*:\s*(\d{5})", re.IGNORECASE)
+_RE_RFC = re.compile(r"RFC\s*:?\s*([A-ZÑ&0-9]{12,13})", re.IGNORECASE)
+_RE_CURP = re.compile(r"CURP\s*:?\s*([A-Z0-9]{18})", re.IGNORECASE)
+_RE_NOMBRE = re.compile(
+    r"(?:Nombre|Denominaci[oó]n|Raz[oó]n\s*Social)\s*(?:\([^)]*\))?\s*:?\s*(.+)",
+    re.IGNORECASE,
+)
+_RE_ESTATUS = re.compile(r"Estatus\s*en\s*el\s*padr[oó]n\s*:?\s*(\w+)", re.IGNORECASE)
+_RE_FECHA_INICIO = re.compile(
+    r"Fecha\s*(?:de\s*)?inicio\s*(?:de\s*)?operaciones?\s*:?\s*(.+)",
+    re.IGNORECASE,
+)
+_RE_CP = re.compile(r"C[oó]digo\s*Postal\s*:?\s*(\d{5})", re.IGNORECASE)
 
 
 def _extraer_identificacion(texto: str) -> dict:
-    """Extrae datos del bloque de identificación del contribuyente."""
+    """Extrae datos del bloque de identificacion del contribuyente."""
     datos: dict = {}
 
     m = _RE_RFC.search(texto)
@@ -211,34 +237,112 @@ def _extraer_identificacion(texto: str) -> dict:
     return datos
 
 
-# --- Extracción principal vía pdfplumber ---
+def _extraer_nombre_de_tablas(tablas: list[list[list[str | None]]]) -> str | None:
+    """Intenta armar el nombre completo concatenando celdas de tabla de identificacion.
 
-def _extraer_regimenes_de_tablas(tablas: list[list[list[str | None]]]) -> list[RegimenConstancia]:
-    """Busca la tabla de regímenes en las tablas extraídas por pdfplumber."""
+    En PDFs reales del SAT, pdfplumber extrae una tabla de identificacion con filas
+    como ['Nombre (s):', 'JUAN'], ['Primer Apellido:', 'PEREZ'], etc.
+    Las concatenamos para obtener el nombre completo.
+    """
+    nombre_partes: dict[str, str] = {}
+    for tabla in tablas:
+        for fila in tabla:
+            if not fila or len(fila) < 2:
+                continue
+            etiqueta = normalizar_texto(fila[0] or "")
+            valor = (fila[1] or "").strip()
+            if not valor:
+                continue
+            if "nombre" in etiqueta and "comercial" not in etiqueta and "vialidad" not in etiqueta and "colonia" not in etiqueta and "localidad" not in etiqueta and "municipio" not in etiqueta and "entidad" not in etiqueta:
+                if "primer" not in etiqueta and "segundo" not in etiqueta:
+                    nombre_partes["nombre"] = valor
+            if "primer apellido" in etiqueta:
+                nombre_partes["primer_apellido"] = valor
+            if "segundo apellido" in etiqueta:
+                nombre_partes["segundo_apellido"] = valor
+            if "denominacion" in etiqueta or "razon social" in etiqueta:
+                nombre_partes["razon_social"] = valor
+
+    if "razon_social" in nombre_partes:
+        return nombre_partes["razon_social"]
+
+    partes = []
+    for k in ("nombre", "primer_apellido", "segundo_apellido"):
+        v = nombre_partes.get(k)
+        if v:
+            partes.append(v)
+    return " ".join(partes) if partes else None
+
+
+# --- Deteccion de encabezado real en tablas ---
+
+def _buscar_encabezado(
+    tabla: list[list[str | None]],
+    palabras_requeridas: list[list[str]],
+) -> int:
+    """Busca la primera fila que contenga las palabras clave esperadas.
+
+    Args:
+        tabla: Tabla extraida por pdfplumber.
+        palabras_requeridas: Lista de grupos de palabras clave. Cada grupo es
+            una lista de alternativas; se requiere que al menos un grupo
+            tenga coincidencia Y que al menos dos celdas no esten vacias.
+
+    Returns:
+        Indice de la fila del encabezado, o -1 si no se encuentra.
+    """
+    for i, fila in enumerate(tabla):
+        celdas_no_vacias = [c for c in fila if (c or "").strip()]
+        if len(celdas_no_vacias) < 2:
+            continue
+
+        texto_fila = " ".join(normalizar_texto(c or "") for c in fila)
+        grupos_encontrados = 0
+        for grupo in palabras_requeridas:
+            if any(palabra in texto_fila for palabra in grupo):
+                grupos_encontrados += 1
+        if grupos_encontrados >= len(palabras_requeridas):
+            return i
+    return -1
+
+
+# --- Extraccion principal via pdfplumber ---
+
+def _extraer_regimenes_de_tablas(tablas: list[list[list[str | None]]]) -> tuple[list[RegimenConstancia], bool]:
+    """Busca la tabla de regimenes en las tablas extraidas por pdfplumber.
+
+    Returns:
+        Tupla de (lista de regimenes, si se encontro la tabla de regimenes).
+    """
     regimenes: list[RegimenConstancia] = []
+    tabla_encontrada = False
+
     for tabla in tablas:
         if not tabla or len(tabla) < 2:
             continue
 
-        encabezado = [normalizar_texto(c or "") for c in tabla[0]]
-
-        tiene_regimen = any("regimen" in h or "descripcion" in h for h in encabezado)
-        tiene_fecha = any("fecha" in h for h in encabezado)
-        if not tiene_regimen or not tiene_fecha:
+        idx_encabezado = _buscar_encabezado(tabla, [
+            ["regimen"],
+            ["fecha"],
+        ])
+        if idx_encabezado == -1:
             continue
+
+        tabla_encontrada = True
+        encabezado = [normalizar_texto(c or "") for c in tabla[idx_encabezado]]
 
         idx_desc = -1
         idx_fecha = -1
         for i, h in enumerate(encabezado):
             if "regimen" in h or "descripcion" in h:
                 idx_desc = i
-            if "fecha" in h and idx_fecha == -1:
+            if "fecha" in h and "fin" not in h and idx_fecha == -1:
                 idx_fecha = i
 
         if idx_desc == -1:
             continue
 
-        for fila in tabla[1:]:
+        for fila in tabla[idx_encabezado + 1:]:
             if len(fila) <= max(idx_desc, idx_fecha if idx_fecha >= 0 else 0):
                 continue
             desc_raw = (fila[idx_desc] or "").strip()
@@ -256,22 +360,24 @@ def _extraer_regimenes_de_tablas(tablas: list[list[list[str | None]]]) -> list[R
                 vigente=True,
             ))
 
-    return regimenes
+    return regimenes, tabla_encontrada
 
 
 def _extraer_obligaciones_de_tablas(tablas: list[list[list[str | None]]]) -> list[ObligacionConstancia]:
-    """Busca la tabla de obligaciones en las tablas extraídas por pdfplumber."""
+    """Busca la tabla de obligaciones en las tablas extraidas por pdfplumber."""
     obligaciones: list[ObligacionConstancia] = []
     for tabla in tablas:
         if not tabla or len(tabla) < 2:
             continue
 
-        encabezado = [normalizar_texto(c or "") for c in tabla[0]]
-
-        tiene_obligacion = any("obligacion" in h or "descripcion de la obligacion" in h for h in encabezado)
-        tiene_vencimiento = any("vencimiento" in h for h in encabezado)
-        if not tiene_obligacion:
+        idx_encabezado = _buscar_encabezado(tabla, [
+            ["obligacion"],
+            ["vencimiento"],
+        ])
+        if idx_encabezado == -1:
             continue
+
+        encabezado = [normalizar_texto(c or "") for c in tabla[idx_encabezado]]
 
         idx_desc = -1
         idx_vencimiento = -1
@@ -287,7 +393,7 @@ def _extraer_obligaciones_de_tablas(tablas: list[list[list[str | None]]]) -> lis
         if idx_desc == -1:
             continue
 
-        for fila in tabla[1:]:
+        for fila in tabla[idx_encabezado + 1:]:
             if len(fila) <= idx_desc:
                 continue
             desc_raw = (fila[idx_desc] or "").strip()
@@ -318,14 +424,8 @@ def extraer_constancia_desde_pdf(ruta_pdf: str | Path) -> DatosConstancia:
     """
     Extrae datos de la constancia a partir de un archivo PDF.
 
-    Usa pdfplumber para extraer tablas y texto. Delega la lógica
+    Usa pdfplumber para extraer tablas y texto. Delega la logica
     de parsing a funciones especializadas.
-
-    Args:
-        ruta_pdf: Ruta al archivo PDF de la constancia.
-
-    Returns:
-        DatosConstancia con los datos extraídos.
     """
     try:
         import pdfplumber
@@ -362,17 +462,11 @@ def extraer_constancia_desde_pdf(ruta_pdf: str | Path) -> DatosConstancia:
 
 def extraer_constancia(texto_pdf: str) -> DatosConstancia:
     """
-    Extrae datos de la constancia a partir del texto ya extraído del PDF.
+    Extrae datos de la constancia a partir del texto ya extraido del PDF.
 
     Para PDFs completos, usar `extraer_constancia_desde_pdf()` que extrae
-    tablas con pdfplumber. Esta función opera solo sobre texto plano,
-    útil para tests y cuando la extracción de texto se hace externamente.
-
-    Args:
-        texto_pdf: Texto completo extraído del PDF de la constancia.
-
-    Returns:
-        DatosConstancia con los datos extraídos.
+    tablas con pdfplumber. Esta funcion opera solo sobre texto plano,
+    util para tests y cuando la extraccion de texto se hace externamente.
     """
     if not texto_pdf or not texto_pdf.strip():
         return DatosConstancia(
@@ -387,20 +481,30 @@ def _parsear_constancia(
     texto: str,
     tablas: list[list[list[str | None]]],
 ) -> DatosConstancia:
-    """Lógica central de parsing compartida entre ambas entradas."""
+    """Logica central de parsing compartida entre ambas entradas."""
     ident = _extraer_identificacion(texto)
 
     rfc = ident.get("rfc", "")
     nombre = ident.get("nombre", "")
     cp = ident.get("domicilio_cp", "")
 
+    if tablas:
+        nombre_tablas = _extraer_nombre_de_tablas(tablas)
+        if nombre_tablas:
+            nombre = nombre_tablas
+
     tipo_persona = ""
     if rfc:
         resultado_rfc = validar_rfc(rfc)
         tipo_persona = resultado_rfc.tipo_persona
 
-    regimenes = _extraer_regimenes_de_tablas(tablas) if tablas else []
-    obligaciones = _extraer_obligaciones_de_tablas(tablas) if tablas else []
+    regimenes: list[RegimenConstancia] = []
+    regimenes_tabla_presente = False
+    obligaciones: list[ObligacionConstancia] = []
+
+    if tablas:
+        regimenes, regimenes_tabla_presente = _extraer_regimenes_de_tablas(tablas)
+        obligaciones = _extraer_obligaciones_de_tablas(tablas)
 
     if not rfc and not regimenes:
         return DatosConstancia(
@@ -409,6 +513,12 @@ def _parsear_constancia(
             error="No se pudo extraer RFC ni regímenes de la constancia",
         )
 
+    valido = True
+    error = ""
+    if rfc and regimenes_tabla_presente and not regimenes:
+        valido = False
+        error = "Constancia tiene tabla de regímenes pero no se pudo extraer ninguno"
+
     return DatosConstancia(
         rfc=rfc,
         nombre=nombre,
@@ -416,49 +526,87 @@ def _parsear_constancia(
         regimenes=regimenes,
         obligaciones=obligaciones,
         domicilio_cp=cp,
-        valido=True,
+        valido=valido,
+        error=error,
+        regimenes_tabla_presente=regimenes_tabla_presente,
     )
 
 
-def mapear_regimen_sat(clave: str) -> str | None:
+def mapear_regimen_sat(clave: str, rfc: str = "") -> str | None:
     """
-    Traduce clave de régimen SAT al enum del sistema.
+    Traduce clave de regimen SAT al enum del sistema.
 
-    Solo devuelve un valor para regímenes que el motor soporta.
-    Para regímenes no soportados, devuelve None.
+    Solo devuelve un valor para regimenes que el motor soporta activamente.
+    Para 626 (RESICO), distingue PF vs PM segun longitud del RFC.
+    Para 625 (Plataformas Tecnologicas), devuelve "PLATAFORMAS_TECNOLOGICAS"
+    como senal para enviar a lista de espera.
     """
     interno = _MAPA_REGIMEN_SAT.get(clave)
+    if interno is None:
+        return None
+
+    if clave == "626":
+        if len(rfc) == 13:
+            return "RESICO_PF"
+        elif len(rfc) == 12:
+            return "RESICO_PM"
+        return "RESICO_PF"
+
     if interno in ("RESICO_PF", "ARRENDAMIENTO"):
         return interno
+
+    if interno == "PLATAFORMAS_TECNOLOGICAS":
+        return "PLATAFORMAS_TECNOLOGICAS"
+
+    if interno == "SUELDOS_SALARIOS":
+        return "SUELDOS_SALARIOS"
+
     return None
 
 
 def derivar_regimen_de_constancia(datos: DatosConstancia) -> str | None:
     """
-    Determina el régimen del sistema a partir de los regímenes en la constancia.
+    Determina el regimen del sistema a partir de los regimenes en la constancia.
 
-    Si la constancia lista un solo régimen soportado, lo devuelve.
-    Si lista múltiples regímenes soportados, aplica reglas de prioridad.
-    Si no lista ningún régimen soportado, devuelve None.
+    Si la constancia lista un solo regimen soportado, lo devuelve.
+    Si lista multiples regimenes soportados, aplica reglas de prioridad.
+    Si no lista ningun regimen soportado, devuelve None.
+
+    Retorna "PLATAFORMAS_TECNOLOGICAS" para clave 625 — el caller debe
+    enviar a lista de espera en vez de continuar al motor de calculo.
+    Retorna variantes con _SUELDOS si tambien tiene clave 605.
     """
     if not datos.regimenes:
         return None
 
-    soportados = []
+    rfc = datos.rfc or ""
+    soportados: list[str] = []
+    tiene_sueldos = False
+
     for reg in datos.regimenes:
         if not reg.vigente:
             continue
-        interno = mapear_regimen_sat(reg.clave_sat)
+        if reg.clave_sat == "605":
+            tiene_sueldos = True
+            continue
+        interno = mapear_regimen_sat(reg.clave_sat, rfc)
         if interno:
             soportados.append(interno)
 
     if not soportados:
         return None
 
+    if "PLATAFORMAS_TECNOLOGICAS" in soportados:
+        return "PLATAFORMAS_TECNOLOGICAS"
+
     if len(soportados) == 1:
-        return soportados[0]
+        regimen = soportados[0]
+    elif "ARRENDAMIENTO" in soportados and "RESICO_PF" in soportados:
+        regimen = "ARRENDAMIENTO"
+    else:
+        regimen = soportados[0]
 
-    if "ARRENDAMIENTO" in soportados and "RESICO_PF" in soportados:
-        return "ARRENDAMIENTO"
+    if tiene_sueldos and regimen in ("RESICO_PF", "ARRENDAMIENTO"):
+        regimen = f"{regimen}_SUELDOS"
 
-    return soportados[0]
+    return regimen
