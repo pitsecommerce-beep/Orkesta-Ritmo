@@ -33,10 +33,11 @@ import { createClient } from "@/lib/supabase";
 import { encryptPassword, toBase64 } from "@/lib/crypto";
 
 const REGIMENES = [
-  { value: "RESICO_PF", label: "RESICO Persona Física" },
-  { value: "RESICO_PF_SUELDOS", label: "RESICO PF con Sueldos" },
-  { value: "ARRENDAMIENTO", label: "Arrendamiento" },
-  { value: "ARRENDAMIENTO_SUELDOS", label: "Arrendamiento con Sueldos" },
+  { value: "RESICO_PF", label: "Negocio propio / Servicios profesionales" },
+  { value: "RESICO_PF_SUELDOS", label: "Negocio propio + Sueldo" },
+  { value: "ARRENDAMIENTO", label: "Renta de propiedades" },
+  { value: "ARRENDAMIENTO_SUELDOS", label: "Renta de propiedades + Sueldo" },
+  { value: "RESICO_PM", label: "Persona Moral (RESICO)" },
 ];
 
 const TIPO_PERSONA = [
