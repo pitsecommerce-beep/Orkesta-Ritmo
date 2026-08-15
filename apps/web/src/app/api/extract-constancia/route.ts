@@ -1,6 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extraerDatosConstancia } from "@/lib/extract-constancia";
-import { PDFParse } from "pdf-parse";
+
+interface TextItem {
+  str?: string;
+  hasEOL?: boolean;
+}
+
+async function extractTextFromPdf(data: Uint8Array): Promise<string> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+
+  const doc = await pdfjs.getDocument({
+    data,
+    verbosity: 0,
+    useSystemFonts: false,
+    disableFontFace: true,
+    isEvalSupported: false,
+  }).promise;
+
+  try {
+    const pages: string[] = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      let pageText = "";
+      for (const item of content.items as TextItem[]) {
+        pageText += item.str ?? "";
+        if (item.hasEOL) pageText += "\n";
+      }
+      pages.push(pageText);
+    }
+    return pages.join("\n");
+  } finally {
+    await doc.destroy();
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +48,12 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = await file.arrayBuffer();
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
-    const result = await parser.getText();
-    const text = result.text;
+    const text = await extractTextFromPdf(new Uint8Array(buffer));
 
     if (!text.trim()) {
       return NextResponse.json({
         valido: false,
-        error: "No se pudo extraer texto del PDF",
+        error: "No se pudo extraer texto del PDF. ¿Es un PDF escaneado (imagen)?",
       });
     }
 

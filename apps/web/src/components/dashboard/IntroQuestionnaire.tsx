@@ -68,7 +68,19 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
         body: formData,
       });
 
-      const datos = await res.json();
+      const text = await res.text();
+      if (!text) {
+        setError("No se recibió respuesta del servidor. Intenta de nuevo.");
+        return;
+      }
+
+      let datos;
+      try {
+        datos = JSON.parse(text);
+      } catch {
+        setError("Respuesta inválida del servidor. Intenta de nuevo.");
+        return;
+      }
 
       if (!res.ok || !datos.valido) {
         setError(datos.error || "No se pudo extraer datos del PDF");
