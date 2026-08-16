@@ -173,32 +173,19 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
       return;
     }
 
-    const { data: tenant, error: tenantError } = await supabase
-      .from("tenants")
-      .insert({
-        rfc: cleanRfc,
-        nombre: nombre.trim(),
-        tipo_persona: tipoPersona,
-        regimen,
-      })
-      .select("id")
-      .single();
+    const { data: tenantId, error: rpcError } = await supabase.rpc(
+      "crear_tenant_con_membership",
+      {
+        p_rfc: cleanRfc,
+        p_nombre: nombre.trim(),
+        p_tipo_persona: tipoPersona,
+        p_regimen: regimen,
+      },
+    );
 
-    if (tenantError) {
+    if (rpcError || !tenantId) {
       setSaving(false);
-      setError(tenantError.message);
-      return;
-    }
-
-    const { error: memberError } = await supabase.from("memberships").insert({
-      tenant_id: tenant.id,
-      user_id: user.id,
-      rol: "propietario",
-    });
-
-    if (memberError) {
-      setSaving(false);
-      setError(memberError.message);
+      setError(rpcError?.message || "Error al crear la cuenta");
       return;
     }
 
@@ -211,10 +198,10 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
     await supabase.from("user_profiles").update(profileUpdate).eq("id", user.id);
 
     if (constanciaFile) {
-      const path = `${tenant.id}/constancia_situacion_fiscal/${constanciaFile.name}`;
+      const path = `${tenantId}/constancia_situacion_fiscal/${constanciaFile.name}`;
       await supabase.storage.from("documentos").upload(path, constanciaFile);
       await supabase.from("documentos").insert({
-        tenant_id: tenant.id,
+        tenant_id: tenantId,
         nombre_archivo: constanciaFile.name,
         tipo: "constancia_situacion_fiscal",
         estado: "recibido",
