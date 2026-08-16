@@ -85,6 +85,9 @@ export default function DashboardHome() {
       return;
     }
 
+    setPeriodos([]);
+    setLoading(true);
+
     if (tenantLoading) return;
 
     async function load() {

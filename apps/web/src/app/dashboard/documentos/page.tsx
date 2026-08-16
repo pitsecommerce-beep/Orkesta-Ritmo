@@ -112,6 +112,9 @@ export default function DocumentosPage() {
       return;
     }
 
+    setDocs([]);
+    setLoading(true);
+
     if (tenantLoading) return;
 
     async function load() {

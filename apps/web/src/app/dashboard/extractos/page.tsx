@@ -52,6 +52,9 @@ export default function ExtractosPage() {
       return;
     }
 
+    setMovimientos([]);
+    setLoading(true);
+
     if (tenantLoading) return;
 
     async function load() {
