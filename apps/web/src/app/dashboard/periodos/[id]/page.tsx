@@ -106,6 +106,10 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
       return;
     }
 
+    setPeriodo(null);
+    setCfdis([]);
+    setLoading(true);
+
     async function load() {
       const supabase = createClient();
       if (!supabase) { setLoading(false); return; }

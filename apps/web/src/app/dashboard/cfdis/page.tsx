@@ -63,6 +63,9 @@ export default function CfdisPage() {
       return;
     }
 
+    setCfdis([]);
+    setLoading(true);
+
     if (tenantLoading) return;
 
     async function load() {

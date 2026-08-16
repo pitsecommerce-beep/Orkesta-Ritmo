@@ -80,6 +80,9 @@ export default function PeriodosPage() {
       return;
     }
 
+    setPeriodos([]);
+    setLoading(true);
+
     if (tenantLoading) return;
 
     async function load() {

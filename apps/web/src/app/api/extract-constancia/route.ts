@@ -1,37 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PDFParse } from "pdf-parse";
 import { extraerDatosConstancia } from "@/lib/extract-constancia";
 
-interface TextItem {
-  str?: string;
-  hasEOL?: boolean;
-}
-
 async function extractTextFromPdf(data: Uint8Array): Promise<string> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-
-  const doc = await pdfjs.getDocument({
-    data,
-    verbosity: 0,
-    useSystemFonts: false,
-    disableFontFace: true,
-    isEvalSupported: false,
-  }).promise;
-
+  const parser = new PDFParse({ data, verbosity: 0 });
   try {
-    const pages: string[] = [];
-    for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      let pageText = "";
-      for (const item of content.items as TextItem[]) {
-        pageText += item.str ?? "";
-        if (item.hasEOL) pageText += "\n";
-      }
-      pages.push(pageText);
-    }
-    return pages.join("\n");
+    const result = await parser.getText();
+    return result.text;
   } finally {
-    await doc.destroy();
+    await parser.destroy();
   }
 }
 
