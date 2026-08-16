@@ -110,6 +110,56 @@ def _tarifas_art96_2025() -> list[TramoArt96]:
     ]
 
 
+def _tarifas_resico_2026() -> list[TramoResico]:
+    """Tarifa RESICO mensual para el ejercicio 2026 (misma que 2025, fija en ley)."""
+    return _tarifas_resico_2025()
+
+
+def _tarifas_art96_2026() -> list[TramoArt96]:
+    """Tarifa Art. 96 LISR mensual 2026, actualizada con factor 1.1321."""
+    from decimal import ROUND_HALF_UP
+
+    factor = Decimal("1.1321")
+
+    def _r(v: Decimal) -> Decimal:
+        return (v * factor).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    base = _tarifas_art96_2025()
+    resultado = []
+    for t in base:
+        resultado.append(TramoArt96(
+            limite_inferior=_r(t.limite_inferior),
+            limite_superior=_r(t.limite_superior) if t.limite_superior is not None else None,
+            cuota_fija=_r(t.cuota_fija),
+            porcentaje=t.porcentaje,
+        ))
+    return resultado
+
+
+def _ejercicio_2026() -> Ejercicio:
+    """Ejercicio fiscal 2026 con tarifas actualizadas."""
+    import datetime
+    from tax_engine.catalogo_data import obtener_catalogo
+    from tax_engine.catalogo import TipoIndicador
+
+    cat = obtener_catalogo()
+    try:
+        uma_feb = cat.resolver_indicador(
+            TipoIndicador.UMA_DIARIA,
+            datetime.date(2026, 2, 1),
+        )
+        uma_mensual = uma_feb.valor * Decimal("30.4")
+    except Exception:
+        uma_mensual = Decimal("117.31") * Decimal("30.4")
+
+    return Ejercicio(
+        year=2026,
+        umas_mensuales=uma_mensual,
+        tarifas_resico=_tarifas_resico_2026(),
+        tarifas_art96=_tarifas_art96_2026(),
+    )
+
+
 def obtener_ejercicio(year: int) -> Optional[Ejercicio]:
     """
     Obtiene los datos del ejercicio fiscal para el year dado.
@@ -128,13 +178,7 @@ def obtener_ejercicio(year: int) -> Optional[Ejercicio]:
             tarifas_art96=_tarifas_art96_2025(),
         )
     elif year == 2026:
-        # Ejercicio 2026: tarifas aun no publicadas
-        return Ejercicio(
-            year=2026,
-            umas_mensuales=Decimal("0"),
-            tarifas_resico=[],
-            tarifas_art96=[],
-        )
+        return _ejercicio_2026()
     return None
 
 
