@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extraerDatosConstancia } from "@/lib/extract-constancia";
+import { installPolyfills } from "@/lib/dommatrix-polyfill";
+
+installPolyfills();
 
 async function extractTextFromPdf(data: Uint8Array): Promise<string> {
   const { getDocument } = await import(
