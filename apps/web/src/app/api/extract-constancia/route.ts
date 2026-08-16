@@ -6,7 +6,7 @@ async function extractTextFromPdf(data: Uint8Array): Promise<string> {
   const parser = new PDFParse({ data, verbosity: 0 });
   try {
     const result = await parser.getText();
-    return result.text;
+    return result.pages.map((p) => p.text).join("\n");
   } finally {
     await parser.destroy();
   }
