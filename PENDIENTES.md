@@ -20,17 +20,54 @@ Elementos que quedaron fuera de la iteración 1 o bloqueados por dependencias ex
 - [ ] **Deprecar esquema viejo de tarifas (`ejercicios`/`tarifas_resico`/`tarifas_art96`).** El worker de cálculo ya usa el catálogo normativo como fuente de verdad. Las tablas viejas (migración 00003) no recibieron datos 2026 — se mantienen por compatibilidad con routers que las consultan directamente. Deuda técnica: migrar esos routers para leer del catálogo y eventualmente eliminar las tablas viejas. No se resolvió en esta sesión porque requiere verificar qué routers y qué consultas dependen de esas tablas.
 - [ ] **Infraestructura de cola RQ para workers.** `calculo_worker.py` es invocable pero no hay cola implementada. `documento_worker.py` sigue vacío. El router `calculo.py` devuelve "enqueued" pero no encola realmente.
 
-## Parseo
+## Parseo y calibración con documentos reales
 
-- [ ] **Calibración de constancia con PDFs reales.** El módulo `constancia.py` tiene extracción completa vía pdfplumber (tablas de regímenes y obligaciones, bloque de identificación, normalización de descripciones, catálogo c_RegimenFiscal). Falta calibrar con documentos reales del SAT en `packages/tax-engine/tests/fixtures/`. Casos pendientes:
-  - [ ] Constancia PF con un solo régimen (RESICO o Arrendamiento)
-  - [ ] Constancia PF con múltiples regímenes vigentes
+### Constancia de situación fiscal
+
+El módulo `constancia.py` tiene extracción completa vía pdfplumber. El **único PDF real calibrado** es de un contribuyente con Plataformas Tecnológicas + Sueldos — un régimen que el motor de cálculo **no soporta**. Cero fixtures reales existen para los cuatro regímenes del MVP.
+
+Estado por régimen:
+
+- [ ] **Constancia RESICO PF (solo)** — pendiente de PDF real de Francisco
+- [ ] **Constancia RESICO PF + Sueldos** — pendiente de PDF real
+- [ ] **Constancia Arrendamiento (solo)** — pendiente de PDF real
+- [ ] **Constancia Arrendamiento + Sueldos** — pendiente de PDF real
+- [x] **Constancia Plataformas Tecnológicas** — calibrada, pero el motor no soporta este régimen
+
+Otros casos pendientes (no bloquean MVP):
   - [ ] Constancia PF con régimen dado de baja (no vigente)
   - [ ] Constancia PM (validar 12 caracteres de RFC)
   - [ ] Constancia con formato de tabla diferente entre años del SAT
   - [ ] Constancia con obligaciones que incluyan periodicidad bimestral
+
+Ruta del fixture: `packages/tax-engine/tests/fixtures/reales/`
+Script de calibración: `packages/tax-engine/scripts/calibrar_contra_reales.py`
+
+### CFDI (parser XML)
+
+El parser de CFDI tiene **cero fixtures reales**. Los 5 fixtures existentes son sintéticos (RFC genéricos `XAXX010101000`/`XBXX020202000`, emisor `"EMPRESA SINTETICA SA DE CV"`). 712+ líneas de tests pasan contra datos fabricados.
+
+- [ ] **CFDI de ingreso real (PUE)** — pendiente de XML real de Francisco
+- [ ] **CFDI de ingreso real (PPD)** — pendiente de XML real
+- [ ] **Complemento de pago real** — pendiente de XML real
+- [ ] **Recibo de nómina real** — pendiente de XML real (si aplica)
+
+Ruta del fixture: `packages/cfdi-parser/tests/fixtures/reales/`
+Script de calibración: `packages/cfdi-parser/scripts/calibrar_contra_reales.py`
+
+### Estados de cuenta bancarios
+
+El parser bancario tiene **cero fixtures reales**. El fixture `mercado_pago_sintetico.txt` contiene datos fabricados (titular inventado, CLABE de relleno). Solo Mercado Pago está implementado; esqueletos de Santander, BBVA, Nu y Revolut creados.
+
+- [ ] **Estado de cuenta real de Mercado Pago** — pendiente de PDF/TXT real de Francisco
+- [ ] **Estado de cuenta de otro banco** — pendiente de que Francisco elija banco
+
+Ruta del fixture: `packages/bank-parser/tests/fixtures/reales/`
+Script de calibración: `packages/bank-parser/scripts/calibrar_contra_reales.py`
+
+### Otros
+
 - [ ] **Descarga masiva vía PAC.** La abstracción `CfdiSource` existe con `PacSource` que levanta `NotImplementedError`. Se necesita contrato con un PAC autorizado.
-- [ ] **Adaptadores bancarios.** Solo Mercado Pago está implementado. Esqueletos de Santander, BBVA, Nu y Revolut creados.
 
 ## Integraciones
 

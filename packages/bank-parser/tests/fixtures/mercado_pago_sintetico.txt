@@ -1,3 +1,6 @@
+# FIXTURE SINTETICO — titular, CLABE y movimientos son datos fabricados.
+# La calibracion con un estado de cuenta real esta pendiente.
+# Ver tests/fixtures/README.md para instrucciones.
 Mercado Pago - Estado de Cuenta
 Titular: MARIA GUADALUPE HERNANDEZ CASTRO
 CVU: 0000007702834561234567

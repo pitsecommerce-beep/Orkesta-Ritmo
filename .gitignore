@@ -45,6 +45,9 @@ logs/
 # Uploads (local dev)
 uploads/
 
-# Fixtures con PII (constancias, PDFs del SAT)
+# Fixtures con PII (constancias, PDFs del SAT, CFDIs reales, estados de cuenta reales)
 packages/tax-engine/tests/fixtures/*.pdf
 packages/tax-engine/tests/fixtures/*_expected.json
+packages/tax-engine/tests/fixtures/reales/
+packages/cfdi-parser/tests/fixtures/reales/
+packages/bank-parser/tests/fixtures/reales/
