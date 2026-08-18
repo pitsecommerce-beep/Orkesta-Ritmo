@@ -14,9 +14,11 @@ Elementos que quedaron fuera de la iteración 1 o bloqueados por dependencias ex
 
 ## Motor de cálculo
 
-- [ ] **Tarifa Art 96 ejercicio 2026.** El sistema muestra alerta cuando se intenta calcular un periodo 2026 sin tarifa capturada. Un humano debe capturar la tabla cuando el SAT la publique. Banner de alerta visible en el dashboard (`TarifaAlertBanner`). El motor lanza `EjercicioNoDisponibleError` si se intenta calcular con tarifas vacías.
-- [ ] **Deducciones comprobables en Arrendamiento.** Solo se implementó `tipo_deduccion = 'ciega'` (35%). La opción comprobable queda deshabilitada en la interfaz.
+- [x] **Tarifa Art 96 ejercicio 2026.** ~~El sistema muestra alerta cuando se intenta calcular un periodo 2026 sin tarifa capturada.~~ Resuelto: las tarifas 2026 están en el catálogo normativo (`catalogo_data.py`) con factor de actualización 1.1321. El motor las consume vía `catalogo_adapter.resolver_ejercicio()`. Verificado con tests end-to-end para enero y marzo 2026.
+- [ ] **Deducciones comprobables en Arrendamiento.** Solo se implementó `tipo_deduccion = 'opcional'` (35%). La opción comprobable queda deshabilitada en la interfaz.
 - [ ] **Régimen de Plataformas Tecnológicas.** Estructura de datos para complemento existe en el parser, pero no hay cálculo ni flujo.
+- [ ] **Deprecar esquema viejo de tarifas (`ejercicios`/`tarifas_resico`/`tarifas_art96`).** El worker de cálculo ya usa el catálogo normativo como fuente de verdad. Las tablas viejas (migración 00003) no recibieron datos 2026 — se mantienen por compatibilidad con routers que las consultan directamente. Deuda técnica: migrar esos routers para leer del catálogo y eventualmente eliminar las tablas viejas. No se resolvió en esta sesión porque requiere verificar qué routers y qué consultas dependen de esas tablas.
+- [ ] **Infraestructura de cola RQ para workers.** `calculo_worker.py` es invocable pero no hay cola implementada. `documento_worker.py` sigue vacío. El router `calculo.py` devuelve "enqueued" pero no encola realmente.
 
 ## Parseo
 

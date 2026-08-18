@@ -237,6 +237,18 @@ def _extraer_identificacion(texto: str) -> dict:
     return datos
 
 
+def _normalizar_para_etiqueta(texto: str) -> str:
+    """Normaliza texto de etiqueta insertando espacios antes de mayusculas internas.
+
+    El PDF del SAT a veces concatena palabras sin espacio (ej: 'PrimerApellido:').
+    normalizar_texto() colapsa espacios pero no los inserta. Esta funcion
+    agrega un espacio antes de cada mayuscula precedida de minuscula para
+    separar palabras concatenadas, y luego aplica normalizar_texto().
+    """
+    separado = re.sub(r"(?<=[a-záéíóúüñ])(?=[A-ZÁÉÍÓÚÜÑ])", " ", texto)
+    return normalizar_texto(separado)
+
+
 def _extraer_nombre_de_tablas(tablas: list[list[list[str | None]]]) -> str | None:
     """Intenta armar el nombre completo concatenando celdas de tabla de identificacion.
 
@@ -249,7 +261,7 @@ def _extraer_nombre_de_tablas(tablas: list[list[list[str | None]]]) -> str | Non
         for fila in tabla:
             if not fila or len(fila) < 2:
                 continue
-            etiqueta = normalizar_texto(fila[0] or "")
+            etiqueta = _normalizar_para_etiqueta(fila[0] or "")
             valor = (fila[1] or "").strip()
             if not valor:
                 continue
