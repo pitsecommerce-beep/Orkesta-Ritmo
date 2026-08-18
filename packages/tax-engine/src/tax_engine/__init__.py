@@ -52,6 +52,12 @@ from tax_engine.catalogo import (
     TipoIndicador,
 )
 from tax_engine.catalogo_data import obtener_catalogo
+from tax_engine.catalogo_adapter import (
+    EjercicioResuelto,
+    MetadataResolucion,
+    fecha_causacion_de_periodo,
+    resolver_ejercicio,
+)
 
 __all__ = [
     "calcular",
@@ -92,4 +98,8 @@ __all__ = [
     "TipoTarifa",
     "TipoIndicador",
     "obtener_catalogo",
+    "EjercicioResuelto",
+    "MetadataResolucion",
+    "fecha_causacion_de_periodo",
+    "resolver_ejercicio",
 ]

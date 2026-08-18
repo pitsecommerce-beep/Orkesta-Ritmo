@@ -330,6 +330,49 @@ class TestValidoConRegimenesVacios:
 
 # --- Extraccion de texto plano ---
 
+class TestExtraerNombreDeTablasBug2:
+    """Bug 2: _extraer_nombre_de_tablas debe tolerar etiquetas concatenadas sin espacio."""
+
+    def test_etiquetas_con_espacio(self):
+        from tax_engine.constancia import _extraer_nombre_de_tablas
+        tablas = [[
+            ["Nombre (s):", "FRANCISCO JAVIER"],
+            ["Primer Apellido:", "TALLABS"],
+            ["Segundo Apellido:", "UTRILLA"],
+        ]]
+        nombre = _extraer_nombre_de_tablas(tablas)
+        assert nombre == "FRANCISCO JAVIER TALLABS UTRILLA"
+
+    def test_etiquetas_sin_espacio_concatenadas(self):
+        """Bug 2: el PDF real produce 'PrimerApellido:' sin espacio."""
+        from tax_engine.constancia import _extraer_nombre_de_tablas
+        tablas = [[
+            ["Nombre(s):", "FRANCISCOJAVIER"],
+            ["PrimerApellido:", "TALLABS"],
+            ["SegundoApellido:", "UTRILLA"],
+        ]]
+        nombre = _extraer_nombre_de_tablas(tablas)
+        assert nombre == "FRANCISCOJAVIER TALLABS UTRILLA"
+
+    def test_etiquetas_mixtas(self):
+        from tax_engine.constancia import _extraer_nombre_de_tablas
+        tablas = [[
+            ["Nombre (s):", "JUAN"],
+            ["PrimerApellido:", "PEREZ"],
+            ["Segundo Apellido:", "GARCIA"],
+        ]]
+        nombre = _extraer_nombre_de_tablas(tablas)
+        assert nombre == "JUAN PEREZ GARCIA"
+
+    def test_razon_social(self):
+        from tax_engine.constancia import _extraer_nombre_de_tablas
+        tablas = [[
+            ["Denominacion/RazonSocial:", "EMPRESA SA DE CV"],
+        ]]
+        nombre = _extraer_nombre_de_tablas(tablas)
+        assert nombre == "EMPRESA SA DE CV"
+
+
 class TestExtraerConstanciaTexto:
     """Extraccion de datos a partir de texto plano."""
 
