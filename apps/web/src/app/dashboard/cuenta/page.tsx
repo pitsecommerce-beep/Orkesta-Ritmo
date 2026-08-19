@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import {
   User,
   Shield,
@@ -28,30 +27,20 @@ import {
   EyeOff,
   X,
   Info,
+  ArrowRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { encryptPassword, toBase64 } from "@/lib/crypto";
+import { useTenant } from "@/hooks/use-tenant";
+import { usePermissions } from "@/hooks/use-permissions";
 
-const REGIMENES = [
-  { value: "RESICO_PF", label: "Negocio propio / Servicios profesionales" },
-  { value: "RESICO_PF_SUELDOS", label: "Negocio propio + Sueldo" },
-  { value: "ARRENDAMIENTO", label: "Renta de propiedades" },
-  { value: "ARRENDAMIENTO_SUELDOS", label: "Renta de propiedades + Sueldo" },
-  { value: "RESICO_PM", label: "Persona Moral (RESICO)" },
-];
-
-const TIPO_PERSONA = [
-  { value: "fisica", label: "Persona Física" },
-  { value: "moral", label: "Persona Moral" },
-];
-
-interface TenantData {
-  id: string;
-  rfc: string;
-  nombre: string;
-  tipo_persona: string;
-  regimen: string;
-}
+const REGIMENES: Record<string, string> = {
+  RESICO_PF: "Negocio propio / Servicios profesionales",
+  RESICO_PF_SUELDOS: "Negocio propio + Sueldo",
+  ARRENDAMIENTO: "Renta de propiedades",
+  ARRENDAMIENTO_SUELDOS: "Renta de propiedades + Sueldo",
+  RESICO_PM: "Persona Moral (RESICO)",
+};
 
 interface ProfileData {
   nombre: string | null;
@@ -68,16 +57,15 @@ interface BovedaData {
 }
 
 export default function CuentaPage() {
+  const { tenant } = useTenant();
+  const { canEditProfile, canManageEfirma, rol } = usePermissions();
+
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState("");
-  const [tenant, setTenant] = useState<TenantData | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [boveda, setBoveda] = useState<BovedaData | null>(null);
 
   const [nombre, setNombre] = useState("");
-  const [rfc, setRfc] = useState("");
-  const [tipoPersona, setTipoPersona] = useState("");
-  const [regimen, setRegimen] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
@@ -115,31 +103,13 @@ export default function CuentaPage() {
         setFechaNacimiento(prof.fecha_nacimiento ?? "");
       }
 
-      const { data: membership } = await supabase
-        .from("memberships")
-        .select("tenant_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (membership) {
-        const { data: t } = await supabase
-          .from("tenants")
-          .select("id, rfc, nombre, tipo_persona, regimen")
-          .eq("id", membership.tenant_id)
-          .single();
-
-        if (t) {
-          setTenant(t);
-          setRfc(t.rfc);
-          setTipoPersona(t.tipo_persona);
-          setRegimen(t.regimen);
-          if (!prof?.nombre) setNombre(t.nombre);
-        }
+      if (tenant) {
+        if (!prof?.nombre) setNombre(tenant.nombre);
 
         const { data: bov } = await supabase
           .from("boveda_efirma")
           .select("id, activa, cer_serie, cer_vigencia_fin, created_at")
-          .eq("tenant_id", membership.tenant_id)
+          .eq("tenant_id", tenant.tenantId)
           .maybeSingle();
 
         if (bov) setBoveda(bov);
@@ -148,30 +118,15 @@ export default function CuentaPage() {
       setLoading(false);
     }
     load();
-  }, []);
-
-  function validateRfc(value: string): boolean {
-    const clean = value.toUpperCase().replace(/\s/g, "");
-    return (clean.length === 12 || clean.length === 13) && /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/.test(clean);
-  }
+  }, [tenant]);
 
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
+    if (!canEditProfile || !tenant) return;
     setProfileMsg(null);
 
     if (!nombre.trim()) {
       setProfileMsg({ type: "error", text: "Ingresa tu nombre completo." });
-      return;
-    }
-
-    const cleanRfc = rfc.toUpperCase().replace(/\s/g, "");
-    if (!validateRfc(cleanRfc)) {
-      setProfileMsg({ type: "error", text: "El RFC no tiene un formato válido." });
-      return;
-    }
-
-    if (!tipoPersona || !regimen) {
-      setProfileMsg({ type: "error", text: "Selecciona tipo de persona y régimen." });
       return;
     }
 
@@ -180,75 +135,23 @@ export default function CuentaPage() {
     const supabase = createClient();
     if (!supabase) { setSavingProfile(false); return; }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSavingProfile(false); return; }
-
-    if (tenant) {
-      const { error } = await supabase
-        .from("tenants")
-        .update({
-          rfc: cleanRfc,
-          nombre: nombre.trim(),
-          tipo_persona: tipoPersona,
-          regimen,
-        })
-        .eq("id", tenant.id);
-
-      if (error) {
-        setSavingProfile(false);
-        setProfileMsg({ type: "error", text: error.message });
-        return;
-      }
-    } else {
-      const { data: newTenant, error: tenantErr } = await supabase
-        .from("tenants")
-        .insert({
-          rfc: cleanRfc,
-          nombre: nombre.trim(),
-          tipo_persona: tipoPersona,
-          regimen,
-        })
-        .select("id")
-        .single();
-
-      if (tenantErr || !newTenant) {
-        setSavingProfile(false);
-        setProfileMsg({ type: "error", text: tenantErr?.message ?? "Error creando tenant." });
-        return;
-      }
-
-      await supabase.from("memberships").insert({
-        tenant_id: newTenant.id,
-        user_id: user.id,
-        rol: "propietario",
-      });
-
-      setTenant({
-        id: newTenant.id,
-        rfc: cleanRfc,
-        nombre: nombre.trim(),
-        tipo_persona: tipoPersona,
-        regimen,
-      });
-    }
-
     const profileUpdate: Record<string, unknown> = { nombre: nombre.trim() };
     if (fechaNacimiento) profileUpdate.fecha_nacimiento = fechaNacimiento;
-    await supabase.from("user_profiles").update(profileUpdate).eq("id", user.id);
+    await supabase.from("user_profiles").update(profileUpdate).eq("id", userId);
 
     setSavingProfile(false);
-    setProfileMsg({ type: "ok", text: "Información fiscal guardada." });
+    setProfileMsg({ type: "ok", text: "Información guardada." });
   }
 
   async function handleUploadConstancia() {
-    if (!constanciaFile || !tenant) return;
+    if (!constanciaFile || !tenant || !canEditProfile) return;
     setSavingConstancia(true);
     setConstanciaMsg(null);
 
     const supabase = createClient();
     if (!supabase) { setSavingConstancia(false); return; }
 
-    const path = `${tenant.id}/constancia_situacion_fiscal/${constanciaFile.name}`;
+    const path = `${tenant.tenantId}/constancia_situacion_fiscal/${constanciaFile.name}`;
     const { error: uploadErr } = await supabase.storage
       .from("documentos")
       .upload(path, constanciaFile, { upsert: true });
@@ -260,7 +163,7 @@ export default function CuentaPage() {
     }
 
     await supabase.from("documentos").insert({
-      tenant_id: tenant.id,
+      tenant_id: tenant.tenantId,
       nombre_archivo: constanciaFile.name,
       tipo: "constancia_situacion_fiscal",
       estado: "recibido",
@@ -270,11 +173,12 @@ export default function CuentaPage() {
 
     setSavingConstancia(false);
     setConstanciaFile(null);
-    setConstanciaMsg({ type: "ok", text: "Constancia subida correctamente." });
+    setConstanciaMsg({ type: "ok", text: "Constancia subida correctamente. El régimen se actualizará tras procesarla." });
   }
 
   async function handleUploadEfirma(e: React.FormEvent) {
     e.preventDefault();
+    if (!canManageEfirma) return;
     setEfirmaMsg(null);
 
     if (!efirmaZip) {
@@ -298,13 +202,13 @@ export default function CuentaPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSavingEfirma(false); return; }
 
-    const cerPath = `${tenant.id}/efirma/certificado.cer`;
-    const keyPath = `${tenant.id}/efirma/llave_privada.key`;
+    const cerPath = `${tenant.tenantId}/efirma/certificado.cer`;
+    const keyPath = `${tenant.tenantId}/efirma/llave_privada.key`;
 
     const { error: uploadErr } = await supabase.storage
       .from("documentos")
       .upload(
-        `${tenant.id}/efirma/${efirmaZip.name}`,
+        `${tenant.tenantId}/efirma/${efirmaZip.name}`,
         efirmaZip,
         { upsert: true }
       );
@@ -328,7 +232,7 @@ export default function CuentaPage() {
     }
 
     const bovedaPayload = {
-      tenant_id: tenant.id,
+      tenant_id: tenant.tenantId,
       cer_storage_path: cerPath,
       key_storage_path: keyPath,
       password_cifrada: toBase64(encryptedPassword),
@@ -361,7 +265,7 @@ export default function CuentaPage() {
     }
 
     await supabase.from("boveda_bitacora").insert({
-      tenant_id: tenant.id,
+      tenant_id: tenant.tenantId,
       boveda_id: boveda?.id ?? "",
       accion: "carga_efirma",
       proceso_solicitante: "cuenta/efirma",
@@ -392,7 +296,6 @@ export default function CuentaPage() {
       </div>
 
       <div className="mt-6 space-y-6 max-w-2xl">
-        {/* INFORMACIÓN FISCAL */}
         <Card className="animate-fade-in-up stagger-1">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
@@ -409,51 +312,35 @@ export default function CuentaPage() {
                   className="mt-1"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  disabled={savingProfile}
+                  disabled={savingProfile || !canEditProfile}
                 />
               </div>
 
-              <div>
-                <Label htmlFor="c-rfc">RFC</Label>
-                <Input
-                  id="c-rfc"
-                  placeholder="XAXX010101000"
-                  className="mt-1 uppercase font-mono"
-                  maxLength={13}
-                  value={rfc}
-                  onChange={(e) => setRfc(e.target.value.toUpperCase())}
-                  disabled={savingProfile}
-                />
-              </div>
+              {tenant && (
+                <>
+                  <div>
+                    <Label>RFC</Label>
+                    <Input
+                      value={tenant.rfc}
+                      disabled
+                      className="mt-1 uppercase font-mono"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      El RFC se deriva de la constancia de situación fiscal y no se puede editar manualmente.
+                    </p>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Tipo de persona</Label>
-                  <Select value={tipoPersona} onValueChange={setTipoPersona} disabled={savingProfile}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIPO_PERSONA.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Régimen fiscal</Label>
-                  <Select value={regimen} onValueChange={setRegimen} disabled={savingProfile}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REGIMENES.map((r) => (
-                        <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                  <div>
+                    <Label>Régimen fiscal</Label>
+                    <div className="mt-1">
+                      <Badge>{REGIMENES[tenant.regimen] ?? tenant.regimen}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      El régimen se detecta automáticamente de tu constancia. Para actualizarlo, sube una constancia nueva.
+                    </p>
+                  </div>
+                </>
+              )}
 
               <div>
                 <Label htmlFor="c-fecha">Fecha de nacimiento</Label>
@@ -463,55 +350,73 @@ export default function CuentaPage() {
                   className="mt-1"
                   value={fechaNacimiento}
                   onChange={(e) => setFechaNacimiento(e.target.value)}
-                  disabled={savingProfile}
+                  disabled={savingProfile || !canEditProfile}
                 />
               </div>
 
               <Separator />
 
               <div>
-                <Label className="text-sm">Constancia de Situación Fiscal</Label>
-                <div
-                  className={`mt-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-                    constanciaFile
-                      ? "border-green-300 bg-green-50"
-                      : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
-                  }`}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const f = e.dataTransfer.files[0];
-                    if (f?.type === "application/pdf") setConstanciaFile(f);
-                  }}
-                >
-                  {constanciaFile ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="text-sm font-medium">{constanciaFile.name}</span>
-                      <button type="button" onClick={() => setConstanciaFile(null)} className="p-1 rounded hover:bg-muted">
-                        <X className="h-4 w-4 text-muted-foreground" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Arrastra tu PDF o{" "}
-                        <button type="button" onClick={() => constanciaInputRef.current?.click()} className="text-[var(--color-azul)] underline">
-                          selecciona
-                        </button>
-                      </p>
-                      <input
-                        ref={constanciaInputRef}
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={(e) => { if (e.target.files?.[0]) setConstanciaFile(e.target.files[0]); }}
-                      />
-                    </div>
-                  )}
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm">Constancia de Situación Fiscal</Label>
+                  <Link href="/dashboard/documentos" className="text-xs text-[var(--color-azul)] hover:underline flex items-center gap-1">
+                    Ver en Documentos <ArrowRight className="h-3 w-3" />
+                  </Link>
                 </div>
-                {constanciaFile && (
+                {canEditProfile ? (
+                  <div
+                    className={`mt-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
+                      constanciaFile
+                        ? "border-green-300 bg-green-50"
+                        : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
+                    }`}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const f = e.dataTransfer.files[0];
+                      if (f?.type === "application/pdf") setConstanciaFile(f);
+                      else setConstanciaMsg({ type: "error", text: "Solo se aceptan archivos PDF." });
+                    }}
+                  >
+                    {constanciaFile ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-medium">{constanciaFile.name}</span>
+                        <button type="button" onClick={() => setConstanciaFile(null)} className="p-1 rounded hover:bg-muted">
+                          <X className="h-4 w-4 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <Upload className="mx-auto h-6 w-6 text-muted-foreground" />
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Arrastra tu PDF o{" "}
+                          <button type="button" onClick={() => constanciaInputRef.current?.click()} className="text-[var(--color-azul)] underline">
+                            selecciona
+                          </button>
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Solo archivos PDF — Máximo 10 MB
+                        </p>
+                        <input
+                          ref={constanciaInputRef}
+                          type="file"
+                          accept=".pdf"
+                          className="hidden"
+                          onChange={(e) => { if (e.target.files?.[0]) setConstanciaFile(e.target.files[0]); }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-lg border-2 border-dashed border-muted-foreground/15 bg-muted/30 p-4 text-center">
+                    <Upload className="mx-auto h-6 w-6 text-muted-foreground/40" />
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Tu rol de lectura no permite subir constancias.
+                    </p>
+                  </div>
+                )}
+                {constanciaFile && canEditProfile && (
                   <Button
                     type="button"
                     variant="outline"
@@ -539,15 +444,29 @@ export default function CuentaPage() {
                 </div>
               )}
 
-              <Button type="submit" disabled={savingProfile} className="gap-1.5">
-                {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {tenant ? "Guardar cambios" : "Crear perfil fiscal"}
-              </Button>
+              {canEditProfile ? (
+                <Button type="submit" disabled={savingProfile} className="gap-1.5">
+                  {savingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Guardar cambios
+                </Button>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0}>
+                      <Button type="button" disabled className="gap-1.5">
+                        Guardar cambios
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Solo el propietario o contador puede editar la información fiscal.
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </form>
           </CardContent>
         </Card>
 
-        {/* E.FIRMA */}
         <Card className="animate-fade-in-up stagger-2">
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
@@ -601,10 +520,12 @@ export default function CuentaPage() {
                     Activa
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Info className="h-3 w-3" />
-                  Para reemplazar tu e.firma, sube un nuevo archivo ZIP.
-                </p>
+                {canManageEfirma && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Info className="h-3 w-3" />
+                    Para reemplazar tu e.firma, sube un nuevo archivo ZIP.
+                  </p>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-2 rounded-lg border p-3 mb-4">
@@ -615,121 +536,137 @@ export default function CuentaPage() {
               </div>
             )}
 
-            <Separator className="my-4" />
+            {canManageEfirma ? (
+              <>
+                <Separator className="my-4" />
+                <form onSubmit={handleUploadEfirma} className="space-y-4">
+                  <div>
+                    <Label className="text-sm">{boveda ? "Reemplazar" : "Cargar"} e.firma (archivo ZIP)</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      El ZIP debe contener tus archivos .cer y .key
+                    </p>
+                    <div
+                      className={`mt-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
+                        efirmaZip
+                          ? "border-green-300 bg-green-50"
+                          : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
+                      }`}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const f = e.dataTransfer.files[0];
+                        if (f && (f.name.endsWith(".zip") || f.type === "application/zip")) {
+                          setEfirmaZip(f);
+                        } else {
+                          setEfirmaMsg({ type: "error", text: "Solo se aceptan archivos ZIP." });
+                        }
+                      }}
+                    >
+                      {efirmaZip ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div className="text-left">
+                            <p className="text-sm font-medium">{efirmaZip.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {(efirmaZip.size / 1024).toFixed(0)} KB
+                            </p>
+                          </div>
+                          <button type="button" onClick={() => setEfirmaZip(null)} className="ml-2 p-1 rounded hover:bg-muted">
+                            <X className="h-4 w-4 text-muted-foreground" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <FileKey className="mx-auto h-8 w-8 text-muted-foreground" />
+                          <p className="mt-2 text-sm font-medium">
+                            Arrastra tu archivo ZIP aquí
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            o{" "}
+                            <button
+                              type="button"
+                              onClick={() => efirmaInputRef.current?.click()}
+                              className="text-[var(--color-azul)] underline"
+                            >
+                              selecciona un archivo
+                            </button>
+                          </p>
+                          <input
+                            ref={efirmaInputRef}
+                            type="file"
+                            accept=".zip"
+                            className="hidden"
+                            onChange={(e) => { if (e.target.files?.[0]) setEfirmaZip(e.target.files[0]); }}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-            <form onSubmit={handleUploadEfirma} className="space-y-4">
-              <div>
-                <Label className="text-sm">{boveda ? "Reemplazar" : "Cargar"} e.firma (archivo ZIP)</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  El ZIP debe contener tus archivos .cer y .key
-                </p>
-                <div
-                  className={`mt-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-                    efirmaZip
-                      ? "border-green-300 bg-green-50"
-                      : "border-muted-foreground/25 hover:border-[var(--color-azul)]/50"
-                  }`}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const f = e.dataTransfer.files[0];
-                    if (f && (f.name.endsWith(".zip") || f.type === "application/zip")) {
-                      setEfirmaZip(f);
-                    }
-                  }}
-                >
-                  {efirmaZip ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <div className="text-left">
-                        <p className="text-sm font-medium">{efirmaZip.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {(efirmaZip.size / 1024).toFixed(0)} KB
-                        </p>
-                      </div>
-                      <button type="button" onClick={() => setEfirmaZip(null)} className="ml-2 p-1 rounded hover:bg-muted">
-                        <X className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <Label htmlFor="efirma-pass">Contraseña de la e.firma</Label>
+                    <div className="relative mt-1">
+                      <Input
+                        id="efirma-pass"
+                        type={showEfirmaPass ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={efirmaPassword}
+                        onChange={(e) => setEfirmaPassword(e.target.value)}
+                        disabled={savingEfirma}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowEfirmaPass((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showEfirmaPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  ) : (
-                    <>
-                      <FileKey className="mx-auto h-8 w-8 text-muted-foreground" />
-                      <p className="mt-2 text-sm font-medium">
-                        Arrastra tu archivo ZIP aquí
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        o{" "}
-                        <button
-                          type="button"
-                          onClick={() => efirmaInputRef.current?.click()}
-                          className="text-[var(--color-azul)] underline"
-                        >
-                          selecciona un archivo
-                        </button>
-                      </p>
-                      <input
-                        ref={efirmaInputRef}
-                        type="file"
-                        accept=".zip"
-                        className="hidden"
-                        onChange={(e) => { if (e.target.files?.[0]) setEfirmaZip(e.target.files[0]); }}
-                      />
-                    </>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Tu contraseña se cifra localmente antes de enviarla. Nunca se almacena en texto plano.
+                    </p>
+                  </div>
+
+                  {efirmaMsg && (
+                    <div className={`flex items-center gap-1.5 text-sm ${efirmaMsg.type === "ok" ? "text-green-600" : "text-red-600"}`}>
+                      {efirmaMsg.type === "ok" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                      {efirmaMsg.text}
+                    </div>
                   )}
-                </div>
-              </div>
 
-              <div>
-                <Label htmlFor="efirma-pass">Contraseña de la e.firma</Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="efirma-pass"
-                    type={showEfirmaPass ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={efirmaPassword}
-                    onChange={(e) => setEfirmaPassword(e.target.value)}
-                    disabled={savingEfirma}
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowEfirmaPass((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
+                  <Button
+                    type="submit"
+                    disabled={savingEfirma || !efirmaZip || !efirmaPassword || !tenant}
+                    className="gap-1.5"
                   >
-                    {showEfirmaPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                    {savingEfirma ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cifrando y guardando...
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="h-4 w-4" />
+                        {boveda ? "Reemplazar e.firma" : "Guardar e.firma de forma segura"}
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </>
+            ) : (
+              <>
+                <Separator className="my-4" />
+                <div className="rounded-lg border bg-muted/30 p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {rol === "contador"
+                      ? "Solo el propietario puede gestionar la e.firma."
+                      : "Tu rol de lectura no permite gestionar la e.firma."}
+                  </p>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Tu contraseña se cifra localmente antes de enviarla. Nunca se almacena en texto plano.
-                </p>
-              </div>
-
-              {efirmaMsg && (
-                <div className={`flex items-center gap-1.5 text-sm ${efirmaMsg.type === "ok" ? "text-green-600" : "text-red-600"}`}>
-                  {efirmaMsg.type === "ok" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                  {efirmaMsg.text}
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                disabled={savingEfirma || !efirmaZip || !efirmaPassword || !tenant}
-                className="gap-1.5"
-              >
-                {savingEfirma ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Cifrando y guardando...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="h-4 w-4" />
-                    {boveda ? "Reemplazar e.firma" : "Guardar e.firma de forma segura"}
-                  </>
-                )}
-              </Button>
-            </form>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

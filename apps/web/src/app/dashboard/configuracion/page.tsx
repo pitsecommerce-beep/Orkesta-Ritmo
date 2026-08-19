@@ -15,8 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Shield, Users, Settings, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import { useTenant } from "@/hooks/use-tenant";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const REGIMEN_LABELS: Record<string, string> = {
   RESICO_PF: "RESICO Persona Física",
@@ -25,13 +32,6 @@ const REGIMEN_LABELS: Record<string, string> = {
   ARRENDAMIENTO_SUELDOS: "Arrendamiento + Sueldos",
 };
 
-interface TenantData {
-  id: string;
-  rfc: string;
-  nombre: string;
-  regimen: string;
-}
-
 interface MembershipData {
   rol: string;
   user_id: string;
@@ -39,9 +39,10 @@ interface MembershipData {
 }
 
 export default function ConfiguracionPage() {
+  const { tenant, loading: tenantLoading } = useTenant();
+  const { canInvite, canEditProfile, canManageEfirma } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
-  const [tenant, setTenant] = useState<TenantData | null>(null);
   const [members, setMembers] = useState<MembershipData[]>([]);
   const [nombre, setNombre] = useState("");
 
@@ -51,6 +52,8 @@ export default function ConfiguracionPage() {
   const [inviteMsg, setInviteMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
   useEffect(() => {
+    if (tenantLoading) return;
+
     async function load() {
       const supabase = createClient();
       if (!supabase) { setLoading(false); return; }
@@ -60,28 +63,13 @@ export default function ConfiguracionPage() {
 
       setUserEmail(user.email ?? "");
 
-      const { data: membership } = await supabase
-        .from("memberships")
-        .select("tenant_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (membership) {
-        const { data: t } = await supabase
-          .from("tenants")
-          .select("id, rfc, nombre, regimen")
-          .eq("id", membership.tenant_id)
-          .single();
-
-        if (t) {
-          setTenant(t);
-          setNombre(t.nombre);
-        }
+      if (tenant) {
+        setNombre(tenant.nombre);
 
         const { data: m } = await supabase
           .from("memberships")
           .select("rol, user_id, user_profiles(email)")
-          .eq("tenant_id", membership.tenant_id);
+          .eq("tenant_id", tenant.tenantId);
 
         if (m) setMembers(m as unknown as MembershipData[]);
       }
@@ -89,7 +77,7 @@ export default function ConfiguracionPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [tenant, tenantLoading]);
 
   async function handleInvite() {
     if (!inviteEmail || !tenant) return;
@@ -121,7 +109,7 @@ export default function ConfiguracionPage() {
     const { error } = await supabase
       .from("memberships")
       .insert({
-        tenant_id: tenant.id,
+        tenant_id: tenant.tenantId,
         user_id: profile.id,
         rol: inviteRole,
       });
@@ -141,7 +129,7 @@ export default function ConfiguracionPage() {
     setInviting(false);
   }
 
-  if (loading) {
+  if (loading || tenantLoading) {
     return (
       <div className="flex items-center justify-center p-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -178,6 +166,7 @@ export default function ConfiguracionPage() {
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     className="mt-1"
+                    disabled={!canEditProfile}
                   />
                 </div>
                 <div>
@@ -185,19 +174,35 @@ export default function ConfiguracionPage() {
                   <div className="mt-1">
                     <Badge>{REGIMEN_LABELS[tenant.regimen] ?? tenant.regimen}</Badge>
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    El régimen se deriva de tu Constancia de Situación Fiscal.
+                  </p>
                 </div>
-                <Button
-                  onClick={async () => {
-                    const supabase = createClient();
-                    if (!supabase || !tenant) return;
-                    await supabase
-                      .from("tenants")
-                      .update({ nombre })
-                      .eq("id", tenant.id);
-                  }}
-                >
-                  Guardar cambios
-                </Button>
+                {canEditProfile ? (
+                  <Button
+                    onClick={async () => {
+                      const supabase = createClient();
+                      if (!supabase || !tenant) return;
+                      await supabase
+                        .from("tenants")
+                        .update({ nombre })
+                        .eq("id", tenant.tenantId);
+                    }}
+                  >
+                    Guardar cambios
+                  </Button>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span tabIndex={0}>
+                        <Button disabled>Guardar cambios</Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Tu rol de lectura no permite modificar la configuración.
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -223,7 +228,7 @@ export default function ConfiguracionPage() {
                     <div key={m.user_id} className="flex items-center justify-between rounded border p-3">
                       <div>
                         <p className="font-medium text-sm">{email}</p>
-                        {isMe && <p className="text-xs text-muted-foreground">Tu</p>}
+                        {isMe && <p className="text-xs text-muted-foreground">Tú</p>}
                       </div>
                       <Badge className="capitalize">{m.rol}</Badge>
                     </div>
@@ -233,47 +238,55 @@ export default function ConfiguracionPage() {
                 <div className="flex items-center justify-between rounded border p-3">
                   <div>
                     <p className="font-medium text-sm">{userEmail}</p>
-                    <p className="text-xs text-muted-foreground">Tu</p>
+                    <p className="text-xs text-muted-foreground">Tú</p>
                   </div>
                   <Badge>Propietario</Badge>
                 </div>
               )}
             </div>
             <Separator className="my-4" />
-            <div>
-              <Label>Invitar miembro</Label>
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                <Input
-                  placeholder="correo@ejemplo.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="flex-1"
-                />
-                <Select value={inviteRole} onValueChange={setInviteRole}>
-                  <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="propietario">Propietario</SelectItem>
-                    <SelectItem value="contador">Contador</SelectItem>
-                    <SelectItem value="lectura">Lectura</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  onClick={handleInvite}
-                  disabled={inviting || !inviteEmail}
-                >
-                  {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invitar"}
-                </Button>
-              </div>
-              {inviteMsg && (
-                <div className={`mt-2 flex items-center gap-1.5 text-sm ${inviteMsg.type === "ok" ? "text-green-600" : "text-red-600"}`}>
-                  {inviteMsg.type === "ok" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                  {inviteMsg.text}
+            {canInvite ? (
+              <div>
+                <Label>Invitar miembro</Label>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    placeholder="correo@ejemplo.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                    <SelectTrigger className="w-full sm:w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="propietario">Propietario</SelectItem>
+                      <SelectItem value="contador">Contador</SelectItem>
+                      <SelectItem value="lectura">Lectura</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    onClick={handleInvite}
+                    disabled={inviting || !inviteEmail}
+                  >
+                    {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Invitar"}
+                  </Button>
                 </div>
-              )}
-            </div>
+                {inviteMsg && (
+                  <div className={`mt-2 flex items-center gap-1.5 text-sm ${inviteMsg.type === "ok" ? "text-green-600" : "text-red-600"}`}>
+                    {inviteMsg.type === "ok" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                    {inviteMsg.text}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="rounded border border-dashed border-muted-foreground/20 bg-muted/30 p-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Tu rol de lectura no permite invitar miembros al workspace.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -291,7 +304,20 @@ export default function ConfiguracionPage() {
                   Almacena tu .cer y .key cifrados con AES-256-GCM
                 </p>
               </div>
-              <Switch />
+              {canManageEfirma ? (
+                <Switch />
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0}>
+                      <Switch disabled />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Solo el propietario puede gestionar la e.firma.
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
             <Separator />
             <div className="flex items-center justify-between">

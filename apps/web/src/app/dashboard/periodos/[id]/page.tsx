@@ -25,6 +25,12 @@ import {
 import { formatMXN } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/use-demo-mode";
+import { usePermissions } from "@/hooks/use-permissions";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const ESTADO_LABELS: Record<string, string> = {
   borrador: "Borrador",
@@ -77,6 +83,7 @@ interface CfdiRow {
 export default function PeriodoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { demoMode } = useDemoMode();
+  const { canCalculate } = usePermissions();
   const [periodo, setPeriodo] = useState<PeriodoData | null>(null);
   const [cfdis, setCfdis] = useState<CfdiRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,12 +184,42 @@ export default function PeriodoDetailPage({ params }: { params: Promise<{ id: st
               {ESTADO_LABELS[periodo.estado] ?? periodo.estado}
             </Badge>
           )}
-          <Button className="gap-2" disabled={!canRecalculate}>
-            <Calculator className="h-4 w-4" /> Recalcular
-          </Button>
-          <Button variant="outline" className="gap-2" disabled={!canMarkPresented}>
-            <CheckCircle className="h-4 w-4" /> Marcar presentado
-          </Button>
+          {canCalculate ? (
+            <Button className="gap-2" disabled={!canRecalculate}>
+              <Calculator className="h-4 w-4" /> Recalcular
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0}>
+                  <Button className="gap-2" disabled>
+                    <Calculator className="h-4 w-4" /> Recalcular
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                Tu rol de lectura no permite recalcular periodos.
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {canCalculate ? (
+            <Button variant="outline" className="gap-2" disabled={!canMarkPresented}>
+              <CheckCircle className="h-4 w-4" /> Marcar presentado
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0}>
+                  <Button variant="outline" className="gap-2" disabled>
+                    <CheckCircle className="h-4 w-4" /> Marcar presentado
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                Tu rol de lectura no permite marcar periodos como presentados.
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
 

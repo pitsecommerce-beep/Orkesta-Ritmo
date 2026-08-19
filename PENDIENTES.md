@@ -84,3 +84,13 @@ Script de calibración: `packages/bank-parser/scripts/calibrar_contra_reales.py`
 - [ ] **Auditoría de seguridad externa** antes del lanzamiento público.
 - [ ] **Rotación de llave maestra de e.firma.** Procedimiento documentado en `SEGURIDAD.md`, pendiente de primera ejecución.
 - [ ] **Certificado SSL propio** para el dominio de producción.
+
+## Capa de sesión multi-tenant y permisos (Etapa 3)
+
+- [x] **Selector de tenant activo.** `TenantProvider` reemplaza el hook roto que usaba `.maybeSingle()`. Soporta usuarios con múltiples membresías. El selector solo aparece en el sidebar cuando `tenants.length > 1`. Persistencia en `localStorage`.
+- [x] **Permisos por rol en UI.** `usePermissions()` deriva capacidades del rol (`propietario`, `contador`, `lectura`). Aplicado a: documentos, CFDIs, extractos, cuenta, configuración, periodos (detalle). Botones deshabilitados con tooltip, nunca ocultos.
+- [x] **Unificación de carga de documentos.** Wizard en `/dashboard/documentos` es el punto de entrada canónico. CFDIs y extractos redirigen al wizard. Constancia agregada como paso 0 del wizard.
+- [x] **RFC y régimen read-only en cuenta.** Derivados de la constancia, no editables manualmente.
+- [x] **Configuración con permisos.** Invite gated a propietario/contador, edición de workspace gated a propietario/contador, e.firma gated a propietario.
+- [x] **RLS gap corregido.** `perfiles_obligacion` ahora tiene RLS habilitado con política de lectura pública (migración 00010).
+- [x] **Build limpio.** `npm run build` pasa sin errores de TypeScript con todos los cambios de Etapa 3.
