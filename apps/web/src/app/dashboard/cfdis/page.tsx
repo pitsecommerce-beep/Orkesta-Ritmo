@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { FileText, Search, FolderOpen, Loader2 } from "lucide-react";
+import { FileText, Search, FolderOpen, Loader2, Upload, ArrowRight } from "lucide-react";
 import { formatMXN } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/use-demo-mode";
 import { useTenant } from "@/hooks/use-tenant";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface CfdiRow {
   id: string;
@@ -51,6 +58,7 @@ const MOCK_CFDIS: CfdiRow[] = [
 export default function CfdisPage() {
   const { demoMode } = useDemoMode();
   const { tenant, loading: tenantLoading } = useTenant();
+  const { canUpload } = usePermissions();
   const [cfdis, setCfdis] = useState<CfdiRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
@@ -97,11 +105,33 @@ export default function CfdisPage() {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="animate-fade-in-up">
-        <h1 className="font-heading text-2xl font-bold">CFDIs</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Comprobantes fiscales digitales clasificados y verificados.
-        </p>
+      <div className="flex items-start justify-between animate-fade-in-up">
+        <div>
+          <h1 className="font-heading text-2xl font-bold">CFDIs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Comprobantes fiscales digitales clasificados y verificados.
+          </p>
+        </div>
+        {canUpload ? (
+          <Link href="/dashboard/documentos">
+            <Button variant="outline" className="gap-2">
+              <Upload className="h-4 w-4" /> Subir CFDIs
+            </Button>
+          </Link>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0}>
+                <Button variant="outline" className="gap-2" disabled>
+                  <Upload className="h-4 w-4" /> Subir CFDIs
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              Tu rol de lectura no permite subir documentos.
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row animate-fade-in-up stagger-2">
@@ -123,7 +153,7 @@ export default function CfdisPage() {
             <SelectItem value="I">Ingreso</SelectItem>
             <SelectItem value="E">Egreso</SelectItem>
             <SelectItem value="P">Pago</SelectItem>
-            <SelectItem value="N">Nomina</SelectItem>
+            <SelectItem value="N">Nómina</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -154,7 +184,7 @@ export default function CfdisPage() {
                     <TableHead>Fecha</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Metodo</TableHead>
+                    <TableHead>Método</TableHead>
                     <TableHead>Actividad</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -179,8 +209,19 @@ export default function CfdisPage() {
                       <TableCell>
                         {c.actividad_id ? (
                           <span className="text-sm">Asignada</span>
-                        ) : (
+                        ) : canUpload ? (
                           <Button variant="outline" size="sm" className="text-xs">Asignar</Button>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0}>
+                                <Button variant="outline" size="sm" className="text-xs" disabled>Asignar</Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Solo propietario o contador puede asignar actividades.
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                       </TableCell>
                     </TableRow>
@@ -193,8 +234,15 @@ export default function CfdisPage() {
               <FolderOpen className="h-10 w-10 text-muted-foreground/40" />
               <p className="mt-3 text-sm text-muted-foreground">No hay CFDIs registrados</p>
               <p className="mt-1 max-w-sm text-xs text-muted-foreground/70">
-                Sube tus archivos XML para ver tus comprobantes fiscales.
+                Sube tus archivos XML desde la sección de Documentos para ver tus comprobantes fiscales.
               </p>
+              {canUpload && (
+                <Link href="/dashboard/documentos" className="mt-3">
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    Ir a Documentos <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
         </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import {
   Upload,
   FileText,
   CheckCircle,
@@ -25,14 +30,18 @@ import {
   Building2,
   Calculator,
   Receipt,
+  FileUp,
+  Trash2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 import { useDemoMode } from "@/hooks/use-demo-mode";
 import { useTenant } from "@/hooks/use-tenant";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const ALLOWED_EXTENSIONS: Record<string, string[]> = {
   cfdi: [".xml"],
   extracto: [".csv", ".xlsx"],
+  constancia: [".pdf"],
   otro: [".pdf", ".xml", ".csv", ".xlsx"],
 };
 
@@ -50,12 +59,13 @@ const MOCK_DOCS: DocRow[] = [
   { id: "2", nombre_archivo: "cfdi_enero_02.xml", tipo: "CFDI", estado: "validado", created_at: "2025-01-20T00:00:00", tamano_bytes: 8192 },
   { id: "3", nombre_archivo: "nomina_enero.xml", tipo: "Nomina", estado: "validado", created_at: "2025-01-31T00:00:00", tamano_bytes: 15360 },
   { id: "4", nombre_archivo: "extracto_bbva_ene.csv", tipo: "Extracto", estado: "recibido", created_at: "2025-02-01T00:00:00", tamano_bytes: 46080 },
+  { id: "5", nombre_archivo: "constancia_situacion.pdf", tipo: "constancia_situacion_fiscal", estado: "validado", created_at: "2025-01-05T00:00:00", tamano_bytes: 102400 },
 ];
 
 const STATUS_MAP: Record<string, { label: string; icon: typeof CheckCircle; color: string }> = {
   validado: { label: "Procesado", icon: CheckCircle, color: "text-green-600" },
   recibido: { label: "Pendiente", icon: Clock, color: "text-yellow-600" },
-  procesando: { label: "Procesando", icon: Clock, color: "text-blue-600" },
+  procesando: { label: "Procesando", icon: Loader2, color: "text-blue-600" },
   con_error: { label: "Error", icon: AlertCircle, color: "text-red-600" },
 };
 
@@ -67,6 +77,13 @@ function formatBytes(bytes: number | null): string {
 }
 
 const PROCESS_STEPS = [
+  {
+    num: 0,
+    title: "Sube tu constancia",
+    description: "PDF de la Constancia de Situación Fiscal del SAT. Tu régimen se detecta automáticamente.",
+    icon: FileUp,
+    docType: "constancia" as const,
+  },
   {
     num: 1,
     title: "Sube tus CFDIs",
@@ -100,10 +117,13 @@ const PROCESS_STEPS = [
 export default function DocumentosPage() {
   const { demoMode } = useDemoMode();
   const { tenant, loading: tenantLoading } = useTenant();
+  const { canUpload, canDelete } = usePermissions();
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (demoMode) {
@@ -136,32 +156,103 @@ export default function DocumentosPage() {
     load();
   }, [demoMode, tenant, tenantLoading]);
 
+  function validateFile(file: File, docType: string | null): string | null {
+    if (file.size > 10 * 1024 * 1024) {
+      return `El archivo "${file.name}" excede el límite de 10 MB.`;
+    }
+
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    const allowed = docType
+      ? ALLOWED_EXTENSIONS[docType] ?? []
+      : [...ALLOWED_EXTENSIONS.cfdi, ...ALLOWED_EXTENSIONS.extracto, ...ALLOWED_EXTENSIONS.constancia];
+
+    if (!allowed.includes(ext)) {
+      const tipoLabel = docType === "cfdi" ? "CFDIs" : docType === "extracto" ? "extractos" : docType === "constancia" ? "constancias" : "documentos";
+      return `"${file.name}" no es un formato válido para ${tipoLabel}. Formatos aceptados: ${allowed.join(", ")}`;
+    }
+
+    return null;
+  }
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-  }, []);
+    setUploadError(null);
+
+    if (!canUpload) return;
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    const activeDocType = activeStep !== null
+      ? PROCESS_STEPS.find(s => s.num === activeStep)?.docType ?? null
+      : null;
+
+    for (const file of files) {
+      const error = validateFile(file, activeDocType);
+      if (error) {
+        setUploadError(error);
+        return;
+      }
+    }
+  }, [canUpload, activeStep]);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    const activeDocType = activeStep !== null
+      ? PROCESS_STEPS.find(s => s.num === activeStep)?.docType ?? null
+      : null;
+
+    for (const file of files) {
+      const error = validateFile(file, activeDocType);
+      if (error) {
+        setUploadError(error);
+        return;
+      }
+    }
+  }, [activeStep]);
 
   const cfdisCount = docs.filter(d => d.tipo === "CFDI" || d.tipo === "Nomina").length;
   const extractosCount = docs.filter(d => d.tipo === "Extracto").length;
+  const constanciaCount = docs.filter(d => d.tipo === "constancia_situacion_fiscal").length;
   const allProcessed = docs.length > 0 && docs.every(d => d.estado === "validado");
 
   function getStepStatus(stepNum: number): "done" | "active" | "pending" {
+    if (stepNum === 0 && constanciaCount > 0) return "done";
     if (stepNum === 1 && cfdisCount > 0) return "done";
     if (stepNum === 2 && extractosCount > 0) return "done";
-    if (stepNum === 1) return "active";
+    if (stepNum === 0) return "active";
+    if (stepNum === 1 && constanciaCount > 0) return "active";
     if (stepNum === 2 && cfdisCount > 0) return "active";
     if (stepNum === 3 && cfdisCount > 0 && allProcessed) return "active";
     if (stepNum === 4 && allProcessed) return "active";
     return "pending";
   }
 
-  const activeDocType = activeStep
-    ? PROCESS_STEPS.find(s => s.num === activeStep)?.docType
+  const activeDocType = activeStep !== null
+    ? PROCESS_STEPS.find(s => s.num === activeStep)?.docType ?? null
     : null;
 
   const extensions = activeDocType
     ? ALLOWED_EXTENSIONS[activeDocType]
-    : [...ALLOWED_EXTENSIONS.cfdi, ...ALLOWED_EXTENSIONS.extracto, ...ALLOWED_EXTENSIONS.otro];
+    : [...ALLOWED_EXTENSIONS.cfdi, ...ALLOWED_EXTENSIONS.extracto, ...ALLOWED_EXTENSIONS.constancia];
+
+  const acceptAttr = [...new Set(extensions)].join(",");
+
+  const uploadLabel = activeDocType === "cfdi"
+    ? "Sube tus CFDIs (XML)"
+    : activeDocType === "extracto"
+      ? "Sube tu estado de cuenta (CSV / XLSX)"
+      : activeDocType === "constancia"
+        ? "Sube tu Constancia de Situación Fiscal (PDF)"
+        : "Arrastra tus archivos aquí";
+
+  const showUploadZone = activeStep !== null
+    ? PROCESS_STEPS.find(s => s.num === activeStep)?.docType !== null
+    : true;
 
   return (
     <div className="p-6 lg:p-8">
@@ -172,7 +263,7 @@ export default function DocumentosPage() {
         </p>
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up stagger-1">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 animate-fade-in-up stagger-1">
         {PROCESS_STEPS.map((step) => {
           const status = getStepStatus(step.num);
           const isUploadStep = step.docType !== null;
@@ -185,6 +276,7 @@ export default function DocumentosPage() {
               onClick={() => {
                 if (isUploadStep) {
                   setActiveStep(isActive ? null : step.num);
+                  setUploadError(null);
                 } else if (step.num === 3) {
                   window.location.href = "/dashboard/periodos";
                 }
@@ -205,7 +297,7 @@ export default function DocumentosPage() {
                       ? "bg-[var(--color-azul)] text-white"
                       : "bg-muted text-muted-foreground"
                 }`}>
-                  {status === "done" ? <CheckCircle className="h-3.5 w-3.5" /> : step.num}
+                  {status === "done" ? <CheckCircle className="h-3.5 w-3.5" /> : step.num + 1}
                 </div>
                 <step.icon className={`h-4 w-4 ${
                   status === "done" ? "text-green-600" : isActive ? "text-[var(--color-azul)]" : "text-muted-foreground"
@@ -215,7 +307,9 @@ export default function DocumentosPage() {
               <p className="mt-0.5 text-xs text-muted-foreground">{step.description}</p>
               {isUploadStep && status === "done" && (
                 <Badge className="mt-2 bg-green-100 text-green-700">
-                  {step.num === 1 ? `${cfdisCount} archivos` : `${extractosCount} archivos`}
+                  {step.num === 0 ? `${constanciaCount} archivo${constanciaCount !== 1 ? "s" : ""}`
+                    : step.num === 1 ? `${cfdisCount} archivos`
+                    : `${extractosCount} archivos`}
                 </Badge>
               )}
             </button>
@@ -223,40 +317,64 @@ export default function DocumentosPage() {
         })}
       </div>
 
-      {(activeStep === 1 || activeStep === 2 || activeStep === null) && (
+      {showUploadZone && (activeStep === null || activeDocType !== null) && (
         <Card className="mt-6 animate-fade-in-up stagger-2">
           <CardContent className="pt-6">
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 text-center transition-colors ${
-                dragOver ? "border-[var(--color-azul)] bg-[var(--color-azul)]/5" : "border-muted-foreground/25"
-              }`}
-            >
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-heading font-semibold">
-                {activeStep === 1
-                  ? "Sube tus CFDIs (XML)"
-                  : activeStep === 2
-                    ? "Sube tu estado de cuenta (CSV / XLSX)"
-                    : "Arrastra tus archivos aquí"}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                o haz clic para seleccionar
-              </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Formatos: {[...new Set(extensions)].join(", ")} — Máximo 10 MB
-              </p>
-              <Button variant="outline" className="mt-4 gap-2">
-                <Upload className="h-4 w-4" /> Seleccionar archivos
-              </Button>
-            </div>
+            {canUpload ? (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 text-center transition-colors ${
+                  dragOver ? "border-[var(--color-azul)] bg-[var(--color-azul)]/5" : "border-muted-foreground/25"
+                }`}
+              >
+                <Upload className="h-8 w-8 text-muted-foreground" />
+                <p className="mt-3 font-heading font-semibold">{uploadLabel}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  o haz clic para seleccionar
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Formatos: {[...new Set(extensions)].join(", ")} &mdash; Máximo 10 MB
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-4 gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-4 w-4" /> Seleccionar archivos
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={acceptAttr}
+                  multiple
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/15 bg-muted/30 p-10 text-center">
+                <Upload className="h-8 w-8 text-muted-foreground/40" />
+                <p className="mt-3 font-heading font-semibold text-muted-foreground">
+                  Carga de archivos no disponible
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Tu rol de lectura no permite subir documentos. Contacta al propietario del workspace.
+                </p>
+              </div>
+            )}
+            {uploadError && (
+              <div className="mt-3 flex items-start gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>{uploadError}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {activeStep === 3 && (
+      {activeStep !== null && PROCESS_STEPS.find(s => s.num === activeStep)?.docType === null && activeStep === 3 && (
         <Card className="mt-6 animate-fade-in-up">
           <CardContent className="flex flex-col items-center py-10 text-center">
             <Calculator className="h-10 w-10 text-[var(--color-azul)]" />
@@ -295,6 +413,7 @@ export default function DocumentosPage() {
                     <TableHead>Estado</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead className="text-right">Tamaño</TableHead>
+                    {canDelete && <TableHead className="w-10"></TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -308,7 +427,11 @@ export default function DocumentosPage() {
                             <span className="font-medium">{doc.nombre_archivo}</span>
                           </div>
                         </TableCell>
-                        <TableCell><Badge variant="outline">{doc.tipo}</Badge></TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {doc.tipo === "constancia_situacion_fiscal" ? "Constancia" : doc.tipo}
+                          </Badge>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <st.icon className={`h-4 w-4 ${st.color}`} />
@@ -321,6 +444,18 @@ export default function DocumentosPage() {
                         <TableCell className="text-right text-sm text-muted-foreground">
                           {formatBytes(doc.tamano_bytes)}
                         </TableCell>
+                        {canDelete && (
+                          <TableCell>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Eliminar archivo</TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                        )}
                       </TableRow>
                     );
                   })}
