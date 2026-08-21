@@ -50,13 +50,15 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
   const [extracting, setExtracting] = useState(false);
   const [extractionDone, setExtractionDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tipoPersonaManual, setTipoPersonaManual] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (tipoPersonaManual) return;
     const clean = rfc.toUpperCase().replace(/\s/g, "");
     if (clean.length === 13 && tipoPersona !== "fisica") setTipoPersona("fisica");
     else if (clean.length === 12 && tipoPersona !== "moral") setTipoPersona("moral");
-  }, [rfc, tipoPersona]);
+  }, [rfc, tipoPersona, tipoPersonaManual]);
 
   function validateRfc(value: string): boolean {
     const clean = value.toUpperCase().replace(/\s/g, "");
@@ -236,6 +238,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
   function handleRemoveFile() {
     setConstanciaFile(null);
     setExtractionDone(false);
+    setTipoPersonaManual(false);
   }
 
   return (
@@ -375,6 +378,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 type="button"
                 onClick={() => {
                   setTipoPersona("fisica");
+                  setTipoPersonaManual(true);
                   if (actividadPrincipal === "") setActividadPrincipal("");
                 }}
                 disabled={saving}
@@ -394,6 +398,7 @@ export function IntroQuestionnaire({ onComplete }: { onComplete?: () => void }) 
                 type="button"
                 onClick={() => {
                   setTipoPersona("moral");
+                  setTipoPersonaManual(true);
                   setActividadPrincipal("");
                   setTieneSueldo(false);
                 }}

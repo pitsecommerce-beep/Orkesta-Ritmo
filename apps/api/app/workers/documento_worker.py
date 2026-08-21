@@ -150,10 +150,9 @@ def _insertar_impuestos(db: Any, cfdi_id: str, tenant_id: str, data: Any) -> Non
         try:
             db.table("cfdi_impuestos").insert({
                 "cfdi_id": cfdi_id,
-                "tenant_id": tenant_id,
-                "tipo": "trasladado",
+                "tipo": "traslado",
                 "impuesto": getattr(imp, "impuesto", ""),
-                "tasa_o_cuota": str(getattr(imp, "tasa_o_cuota", "0")),
+                "tasa": str(getattr(imp, "tasa_o_cuota", getattr(imp, "tasa", "0"))),
                 "importe": str(getattr(imp, "importe", "0")),
                 "base": str(getattr(imp, "base", "0")),
             }).execute()
@@ -165,11 +164,11 @@ def _insertar_impuestos(db: Any, cfdi_id: str, tenant_id: str, data: Any) -> Non
         try:
             db.table("cfdi_impuestos").insert({
                 "cfdi_id": cfdi_id,
-                "tenant_id": tenant_id,
-                "tipo": "retenido",
+                "tipo": "retencion",
                 "impuesto": getattr(imp, "impuesto", ""),
-                "tasa_o_cuota": str(getattr(imp, "tasa_o_cuota", "0")),
+                "tasa": str(getattr(imp, "tasa_o_cuota", getattr(imp, "tasa", "0"))),
                 "importe": str(getattr(imp, "importe", "0")),
+                "base": str(getattr(imp, "base", "0")),
             }).execute()
         except Exception:
             logger.warning("Error insertando impuesto retenido para CFDI %s", cfdi_id)
@@ -230,7 +229,7 @@ def _procesar_estado_cuenta(
                     "moneda": mov.moneda,
                     "detalle": mov.detalle,
                     "es_espejo": mov.es_espejo,
-                    "confianza": mov.confianza.value,
+                    "confianza": mov.confianza.value.upper(),
                 }).execute()
                 movs_insertados += 1
             except Exception:
