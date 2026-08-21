@@ -37,27 +37,31 @@ class TestFormatoNoReconocido:
         archivo.write_bytes(b"%PDF-1.4 contenido aleatorio sin estructura")
         with patch("bank_parser.detector._extrae_texto_pdf",
                     return_value="Texto completamente irrelevante sin banco"):
-            with pytest.raises(ValueError, match="No se reconoce"):
-                detecta_institucion(archivo)
+            with patch("bank_parser.detector._extrae_texto_ocr",
+                        return_value="Texto completamente irrelevante sin banco"):
+                with pytest.raises(ValueError, match="No se reconoce"):
+                    detecta_institucion(archivo)
 
     def test_error_lista_instituciones_soportadas(self, tmp_path):
         archivo = tmp_path / "otro.pdf"
         archivo.write_bytes(b"%PDF-1.4")
         with patch("bank_parser.detector._extrae_texto_pdf",
                     return_value="nada que matchee"):
-            with pytest.raises(ValueError) as exc_info:
-                detecta_institucion(archivo)
-            msg = str(exc_info.value)
-            assert "Mercado Pago" in msg
-            assert "Santander" in msg
+            with patch("bank_parser.detector._extrae_texto_ocr",
+                        return_value="nada que matchee"):
+                with pytest.raises(ValueError) as exc_info:
+                    detecta_institucion(archivo)
+                msg = str(exc_info.value)
+                assert "Mercado Pago" in msg
+                assert "Santander" in msg
 
 
 class TestAdaptadorNoImplementado:
     """Verificar que adaptadores esqueleto fallan con mensaje claro."""
 
-    def test_santander_no_implementado(self):
+    def test_santander_archivo_invalido(self):
         from bank_parser.adapters.santander import SantanderAdapter
-        with pytest.raises(NotImplementedError, match="Santander"):
+        with pytest.raises(Exception):
             SantanderAdapter().parsea(Path("/fake"))
 
     def test_bbva_no_implementado(self):

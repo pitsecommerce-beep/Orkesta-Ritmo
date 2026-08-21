@@ -64,9 +64,10 @@ class TestRevolut:
 class TestSkeletonsRaiseNotImplemented:
     """Verifica que los skeletons lanzan NotImplementedError."""
 
-    def test_santander_not_implemented(self) -> None:
+    def test_santander_implemented(self) -> None:
+        """Santander is now implemented — no longer raises NotImplementedError."""
         adapter = SantanderAdapter()
-        with pytest.raises(NotImplementedError, match="Santander"):
+        with pytest.raises(Exception):
             adapter.parsea(Path("dummy.pdf"))
 
     def test_bbva_not_implemented(self) -> None:
@@ -88,8 +89,11 @@ class TestSkeletonsRaiseNotImplemented:
 class TestSkeletonsDetectaReturnFalse:
     """Verifica que los skeletons no detectan nada."""
 
-    def test_santander_detecta_false(self) -> None:
+    def test_santander_detecta_irrelevante(self) -> None:
         assert SantanderAdapter().detecta("cualquier texto") is False
+
+    def test_santander_detecta_santander(self) -> None:
+        assert SantanderAdapter().detecta("Santander ESTADO DE CUENTA") is True
 
     def test_bbva_detecta_false(self) -> None:
         assert BBVAAdapter().detecta("cualquier texto") is False

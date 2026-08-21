@@ -26,19 +26,25 @@ class TestDetectorInstitucion:
         assert isinstance(adaptador, MercadoPagoAdapter)
         assert adaptador.institucion == "Mercado Pago"
 
+    @patch("bank_parser.detector._extrae_texto_ocr")
     @patch("bank_parser.detector._extrae_texto_pdf")
-    def test_no_reconoce_lanza_error(self, mock_extrae: MagicMock) -> None:
-        mock_extrae.return_value = "Documento cualquiera sin marcadores"
+    def test_no_reconoce_lanza_error(
+        self, mock_extrae: MagicMock, mock_ocr: MagicMock,
+    ) -> None:
+        mock_extrae.return_value = "Documento cualquiera sin marcadores bancarios validos aqui"
+        mock_ocr.return_value = "Documento cualquiera sin marcadores bancarios validos aqui"
         from pathlib import Path
 
         with pytest.raises(ValueError, match="No se reconoce"):
             detecta_institucion(Path("fake.pdf"))
 
+    @patch("bank_parser.detector._extrae_texto_ocr")
     @patch("bank_parser.detector._extrae_texto_pdf")
     def test_error_incluye_instituciones_soportadas(
-        self, mock_extrae: MagicMock
+        self, mock_extrae: MagicMock, mock_ocr: MagicMock,
     ) -> None:
-        mock_extrae.return_value = "Nada que ver"
+        mock_extrae.return_value = "Nada que ver con un banco ni una institucion financiera"
+        mock_ocr.return_value = "Nada que ver con un banco ni una institucion financiera"
         from pathlib import Path
 
         with pytest.raises(ValueError, match="Mercado Pago"):

@@ -18,7 +18,7 @@ Elementos que quedaron fuera de la iteración 1 o bloqueados por dependencias ex
 - [ ] **Deducciones comprobables en Arrendamiento.** Solo se implementó `tipo_deduccion = 'opcional'` (35%). La opción comprobable queda deshabilitada en la interfaz.
 - [ ] **Régimen de Plataformas Tecnológicas.** Estructura de datos para complemento existe en el parser, pero no hay cálculo ni flujo.
 - [ ] **Deprecar esquema viejo de tarifas (`ejercicios`/`tarifas_resico`/`tarifas_art96`).** El worker de cálculo ya usa el catálogo normativo como fuente de verdad. Las tablas viejas (migración 00003) no recibieron datos 2026 — se mantienen por compatibilidad con routers que las consultan directamente. Deuda técnica: migrar esos routers para leer del catálogo y eventualmente eliminar las tablas viejas. No se resolvió en esta sesión porque requiere verificar qué routers y qué consultas dependen de esas tablas.
-- [ ] **Infraestructura de cola RQ para workers.** `calculo_worker.py` es invocable pero no hay cola implementada. `documento_worker.py` sigue vacío. El router `calculo.py` devuelve "enqueued" pero no encola realmente.
+- [ ] **Infraestructura de cola RQ para workers.** `calculo_worker.py` y `documento_worker.py` ahora se invocan via `BackgroundTasks` de FastAPI (sincrono dentro del proceso del API). Funcional para volumen bajo pero no escala: documentos con OCR pesado (Santander, ~15s por PDF) bloquean un thread del servidor. Migrar a RQ con Redis cuando el volumen lo justifique. Los routers ya no mienten sobre el estado ("processing" en vez de "enqueued").
 
 ## Parseo y calibración con documentos reales
 
@@ -60,6 +60,9 @@ Script de calibración: `packages/cfdi-parser/scripts/calibrar_contra_reales.py`
 El parser bancario tiene **cero fixtures reales**. El fixture `mercado_pago_sintetico.txt` contiene datos fabricados (titular inventado, CLABE de relleno). Solo Mercado Pago está implementado; esqueletos de Santander, BBVA, Nu y Revolut creados.
 
 - [ ] **Estado de cuenta real de Mercado Pago** — pendiente de PDF/TXT real de Francisco
+- [x] **Adaptador Santander (debito + credito).** Implementado con OCR via tesseract. Requiere `tesseract-ocr` y `tesseract-ocr-spa` instalados en el sistema. Validado contra fixtures sinteticos rasterizados. Pendiente de calibracion con documentos reales de Francisco.
+- [ ] **Calibracion Santander con documentos reales** — cuando Francisco entregue sus estados de cuenta reales, van a `tests/fixtures/reales/` y se calibra contra ellos.
+- [ ] **CONFIRMAR CON CONTADOR: tratamiento fiscal de movimientos TDC.** Los movimientos de tarjeta de credito no son equivalentes a flujo de efectivo. El criterio de "efectivamente pagado" para IVA acreditable tiene reglas propias. Ademas, el pago del estado de cuenta desde debito y los cargos de la TDC representan el mismo gasto visto dos veces — riesgo de duplicar gastos si ambos documentos se cargan al mismo periodo. NO implementar regla de deduccion sin confirmacion del contador.
 - [ ] **Estado de cuenta de otro banco** — pendiente de que Francisco elija banco
 
 Ruta del fixture: `packages/bank-parser/tests/fixtures/reales/`

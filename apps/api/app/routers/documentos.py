@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, File
 from typing import Optional
 from supabase import Client
 
@@ -12,6 +12,7 @@ MAX_FILE_SIZE = 50 * 1024 * 1024
 
 @router.post("/upload")
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     tenant_id: str = Query(...),
     tipo: str = Query(...),
@@ -53,7 +54,25 @@ async def upload_document(
 
     if not resp.data:
         raise HTTPException(status_code=500, detail="Error al registrar documento.")
-    return resp.data[0]
+
+    documento = resp.data[0]
+
+    from app.workers.documento_worker import procesar_documento
+    background_tasks.add_task(
+        procesar_documento,
+        documento_id=documento["id"],
+        tenant_id=tenant_id,
+        tipo=tipo,
+        contenido=content,
+        nombre_archivo=file.filename,
+        db=db,
+    )
+
+    return {
+        **documento,
+        "status": "processing",
+        "message": "Documento recibido. El procesamiento se ejecuta en segundo plano.",
+    }
 
 
 @router.get("/")

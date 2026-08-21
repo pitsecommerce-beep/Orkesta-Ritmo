@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from supabase import Client
 
 from app.db import get_supabase, require_auth
@@ -23,6 +23,7 @@ async def _require_email_verificado(db: Client, user_id: str):
 
 @router.post("/ejecutar")
 async def ejecutar_calculo(
+    background_tasks: BackgroundTasks,
     tenant_id: str = Query(...),
     periodo_id: str = Query(...),
     db: Client = Depends(get_supabase),
@@ -48,9 +49,16 @@ async def ejecutar_calculo(
             detail=f"No se puede recalcular un periodo en estado '{estado}'.",
         )
 
+    db.table("periodos").update({
+        "estado": "calculando",
+    }).eq("id", periodo_id).execute()
+
+    from app.workers.calculo_worker import ejecutar_calculo as _ejecutar
+    background_tasks.add_task(_ejecutar, tenant_id, periodo_id, db)
+
     return {
-        "status": "enqueued",
-        "message": "Calculo encolado para procesamiento.",
+        "status": "processing",
+        "message": "Calculo iniciado. Consulta el resultado en /resultado/{periodo_id}.",
         "periodo_id": periodo_id,
     }
 
