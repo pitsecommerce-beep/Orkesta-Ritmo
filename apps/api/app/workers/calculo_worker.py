@@ -160,9 +160,9 @@ def ejecutar_calculo(tenant_id: str, periodo_id: str, db: Any = None) -> dict:
     _registrar_resolucion(
         db=db,
         tenant_id=tenant_id,
-        periodo_id=periodo_id,
         ejercicio_year=ejercicio_year,
         numero_periodo=numero_periodo,
+        regimen=regimen_str,
         fecha_causacion=fecha_caus,
         metadata=ejercicio_resuelto.metadata,
         resultado_json=resultado_json,
@@ -188,9 +188,9 @@ def _marcar_requiere_revision(
 def _registrar_resolucion(
     db: Any,
     tenant_id: str,
-    periodo_id: str,
     ejercicio_year: int,
     numero_periodo: int,
+    regimen: str,
     fecha_causacion: date,
     metadata: Any,
     resultado_json: dict,
@@ -198,9 +198,9 @@ def _registrar_resolucion(
     try:
         registro = {
             "tenant_id": tenant_id,
-            "periodo_id": periodo_id,
             "ejercicio": ejercicio_year,
-            "numero_periodo": numero_periodo,
+            "periodo": numero_periodo,
+            "regimen": regimen,
             "fecha_causacion": fecha_causacion.isoformat(),
             "reglas_usadas": json.loads(json.dumps(
                 metadata.reglas_usadas, cls=_DecimalEncoder,
@@ -217,7 +217,8 @@ def _registrar_resolucion(
         db.table("resolucion_calculo").insert(registro).execute()
     except Exception:
         logger.exception(
-            "Error registrando resolucion_calculo para periodo %s", periodo_id,
+            "Error registrando resolucion_calculo para periodo %s (ej %s)",
+            numero_periodo, ejercicio_year,
         )
 
 
